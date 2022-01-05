@@ -36,3 +36,4 @@ class AccountCreateTest(TestCase):
     Account.objects.create(username='sameperson',email = 'test@test.test',password = 'testpassword',age='1')
     form = AccountCreateForm(data={'username':'sameperson','email':'test@test.test','password1':'testpassword','password2':'testpassword','age':'1'})
     self.assertFalse(form.is_valid())
+

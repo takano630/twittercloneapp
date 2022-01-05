@@ -8,7 +8,7 @@ class StartView(TemplateView):
 
 class SignupView(CreateView):
     form_class = AccountCreateForm
-    template_name = "user_HTML/signup.html" 
+    template_name = "user/signup.html" 
     def form_valid(self, form):
       user = form.save() 
-      return render(self.request,'user_HTML/successed_signup.html') 
+      return render(self.request,'user/successed_signup.html') 
