@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.test import Client
 client = Client()
 
-class AccountCreatTest(TestCase):
+class AccountCreateTest(TestCase):
   def setUp(self):
     test = Account.objects.create(username='testpeople',email = 'test@test',password = 'testpasward',age='1')
     test.save()
@@ -16,3 +16,4 @@ class AccountCreatTest(TestCase):
   def test_user_number(self):
     user_count = Account.objects.count()
     self.assertEqual(user_count,1)
+
