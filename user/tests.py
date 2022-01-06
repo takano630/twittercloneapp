@@ -7,8 +7,7 @@ client = Client()
 
 class AccountCreateTest(TestCase):
   def setUp(self):
-   global testpeople
-   testpeople = Account.objects.create(username='testpeople',email = 'test@test.test',password = 'testpassword',age='1')
+   self.test_people = Account.objects.create(username='testpeople',email = 'test@test.test',password = 'testpassword',age='1')
 
   def test_status(self):
     response = client.get(reverse('signup'))
@@ -19,15 +18,17 @@ class AccountCreateTest(TestCase):
     self.assertEqual(user_count,1)
 
   def test_people_data(self):
-    self.assertEqual(testpeople.username,'testpeople')
-    self.assertEqual(testpeople.email,'test@test.test')
-    self.assertEqual(testpeople.password,'testpassword')
-    self.assertEqual(testpeople.age,'1')
+    self.assertEqual(self.test_people.username,'testpeople')
+    self.assertEqual(self.test_people.email,'test@test.test')
+    self.assertEqual(self.test_people.password,'testpassword')
+    self.assertEqual(self.test_people.age,'1')
   
+class SuccessfulSignUpTest(TestCase):
   def test_form(self):
     form = AccountCreateForm(data={'username':'people','email':'test@test.test','password1':'testpassword','password2':'testpassword','age':'1'})
     self.assertTrue(form.is_valid())
 
+class InvalidSignUpTest(TestCase):
   def test_form_failed(self):
     form = AccountCreateForm(data={})
     self.assertFalse(form.is_valid())
