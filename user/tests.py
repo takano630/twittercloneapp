@@ -1,6 +1,5 @@
 from django.test import TestCase
 from .models import Account
-from .forms import AccountCreateForm
 from django.urls import reverse
 from django.test import Client
 client = Client()
@@ -11,7 +10,7 @@ class AccountCreateTest(TestCase):
 
   def test_status(self):
     response = client.get(reverse('signup'))
-    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.status_code,200)
 
   def test_user_number(self):
     user_count = Account.objects.count()
@@ -24,17 +23,37 @@ class AccountCreateTest(TestCase):
     self.assertEqual(self.test_people.age,'1')
   
 class SuccessfulSignUpTest(TestCase):
-  def test_form(self):
-    form = AccountCreateForm(data={'username':'people','email':'test@test.test','password1':'testpassword','password2':'testpassword','age':'1'})
-    self.assertTrue(form.is_valid())
+  def setUp(self):
+    url = reverse('signup')
+    data = {'username':'people','email':'test@test.test','password1':'testpassword','password2':'testpassword','age':'1'}
+    self.response = self.client.post(url,data)
+ 
+  def test_user_creation(self):
+        self.assertTrue(Account.objects.exists())
+
 
 class InvalidSignUpTest(TestCase):
-  def test_form_failed(self):
-    form = AccountCreateForm(data={})
-    self.assertFalse(form.is_valid())
+  def setUp(self):
+    url = reverse('signup')
+    data = {}
+    self.response = self.client.post(url,data)
 
-  def test_same_name_user(self):
-    Account.objects.create(username='sameperson',email = 'test@test.test',password = 'testpassword',age='1')
-    form = AccountCreateForm(data={'username':'sameperson','email':'test@test.test','password1':'testpassword','password2':'testpassword','age':'1'})
-    self.assertFalse(form.is_valid())
+  def test_signup_status(self):
+    self.assertEquals(self.response.status_code,200)
+
+  def test_dont_create_user(self):
+        self.assertFalse(Account.objects.exists())
+
+
+class SameNameSignUpTest(TestCase):
+  def setUp(self):
+    url = reverse('signup')
+    data = {'username':'people','email':'test@test.test','password1':'testpassword','password2':'testpassword','age':'1'}
+    self.response = self.client.post(url,data)
+    same_name_data = {'username':'people','email':'testtest@test.test','password1':'testtestpassword','password2':'testtestpassword','age':'3'}
+    self.response = self.client.post(url,same_name_data)
+
+  def test_same_name_signup(self):
+    user_count = Account.objects.count()
+    self.assertEqual(user_count,1)
 
