@@ -11,4 +11,4 @@ class SignupView(CreateView):
     template_name = "user/signup.html" 
     def form_valid(self, form):
       user = form.save() 
-      return render(self.request,'user/successed_signup.html') 
+      return render(self.request,'user/signup_successed.html') 
