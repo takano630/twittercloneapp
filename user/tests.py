@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from .models import Account
 
+
 class TopViewTests(TestCase):
   def setUp(self):
     self.response = self.client.get(reverse('top'))
@@ -13,12 +14,11 @@ class TopViewTests(TestCase):
   def test_top_html(self):
     self.assertTemplateUsed(self.response, 'top.html')
 
+
 class AccountModelTests(TestCase):
   def setUp(self):
-   self.test_people = Account.objects.create(username='testpeople', email = 'test@test.test', 
-                                             password = 'testpassword', age='1')
    self.data = {'username':'testpeople', 'email':'test@test.test', 'password':'testpassword', 'age':'1'}
-
+   self.test_people = Account.objects.create(username=self.data['username'],email=self.data['email'],password=self.data['password'],age=self.data['age'])
 
   def test_user_number(self):
     user_count = Account.objects.count()
@@ -59,6 +59,8 @@ class SignUpSuccessTests(TestCase):
 class SignUpFailTest(TestCase):
   def setUp(self):
     self.url = reverse('signup')
+    self.data = {'username':'testpeople','email':'test@test.test','password1':'testpassword',
+                 'password2':'testpassword','age':'1'}
 
   def test_post_empty(self):
     data = {}
@@ -68,74 +70,80 @@ class SignUpFailTest(TestCase):
     self.assertTemplateUsed(self.response, 'user/signup.html')
 
   def test_post_short_password(self):
-    data = {'username':'people','email':'test@test.test','password1':'test','password2':'test','age':'1'}
-    self.response = self.client.post(self.url, data)
+    self.data['password1'] = 'test'
+    self.data['password2'] = 'test'
+    self.response = self.client.post(self.url, self.data)
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
 
-
   def test_post_different_password1_password2(self):
-      data = {'username':'people','email':'test@test.test','password1':'testpassword','password2':'testdifferent','age':'1'}
-      self.response = self.client.post(self.url, data)
+      self.data['password1'] = 'testpassword',
+      self.data['password2'] = 'testdifferent',
+      self.response = self.client.post(self.url, self.data)
       self.assertEquals(self.response.status_code, 200)
       self.assertFalse(Account.objects.exists())
       self.assertTemplateUsed(self.response, 'user/signup.html')
     
   def test_post_only_number_password(self):
-    data = {'username':'people','email':'test@test.test','password1':'20220108','password2':'20220108','age':'1'}
-    self.response = self.client.post(self.url, data)
+    self.data['password1'] = '20220108'
+    self.data['password2'] = '20220108'
+    self.response = self.client.post(self.url, self.data)
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
   
   def test_post_similar_name_password(self):
-    data = {'username':'testpeople','email':'test@test.test','password1':'testpeople','password2':'testpeople','age':'1'}
-    self.response = self.client.post(self.url, data)
+    self.data['password1'] = 'testpeople'
+    self.data['password2'] = 'testpeople'
+    self.response = self.client.post(self.url, self.data)
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
 
   def test_post_general_password(self):
-    data = {'username':'people','email':'test@test.test','password1':'password','password2':'password','age':'1'}
-    self.response = self.client.post(self.url, data)
+    self.data['password1'] = 'password'
+    self.data['password2'] = 'password'
+    self.response = self.client.post(self.url, self.data)
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
 
   def test_post_duplicate_username(self):
-    data = {'username':'people','email':'test@test.test','password1':'testpassword','password2':'testpassword','age':'1'}
-    self.response = self.client.post(self.url, data)
-    same_name_data = {'username':'people','email':'testtest@test.test','password1':'testtestpassword','password2':'testtestpassword','age':'3'}
+    self.response = self.client.post(self.url, self.data)
+    same_name_data = {'username':'testpeople','email':'testtest@test.test','password1':'testtestpassword','password2':'testtestpassword','age':'3'}
     self.response = self.client.post(self.url, same_name_data)
     user_count = Account.objects.count()
     self.assertEqual(user_count, 1)
     self.assertTemplateUsed(self.response, 'user/signup.html')
 
   def test_post_mistake_email(self):
-    data = {'username':'people','email':'testtest.test','password1':'testpassword','password2':'testpassword','age':'1'}
-    self.response = self.client.post(self.url, data)
+    self.data['email'] = 'testtest.test'
+    self.response = self.client.post(self.url, self.data)
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
 
   def test_post_blank_username(self):
-    data = {'username':'','email':'test@test.test','password1':'testpassword','password2':'testpassword','age':'1'}
-    self.response = self.client.post(self.url, data)
+    self.data['username'] = ''
+    self.response = self.client.post(self.url, self.data)
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
 
   def test_post_blank_email(self):
-    data = {'username':'people','email':'','password1':'testpassword','password2':'testpassword','age':'1'}
-    self.response = self.client.post(self.url, data)
+    self.data['email'] = ''
+    self.response = self.client.post(self.url, self.data)
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
 
   def test_post_blank_password(self):
-    data = {'username':'people','email':'test@test.test','password1':'','password2':'','age':'1'}
-    self.response = self.client.post(self.url, data)
+    self.data['password1'] = ''
+    self.data['password2'] = ''
+    self.response = self.client.post(self.url, self.data)
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
+
+
