@@ -7,7 +7,7 @@
     {% if user.is_authenticated %}
     <p>{{ user.username }}でログイン中</p>
     <h2>
-      <a href="logout">ログアウト</a>
+      <a href="{% url 'logout' %}">ログアウト</a>
     </h2>
     {% else %}
     <p>ログインしていません</p>
