@@ -148,14 +148,16 @@ class SignUpFailTest(TestCase):
 
 
 class LoginSuccessTest(TestCase):
-  def setup(self):
+  def setUp(self):
     self.data = {'username':'people', 'email':'test@test.test', 'password':'testpassword', 'age':'1'}
     self.test_people = Account.objects.create(username=self.data['username'],email=self.data['email'],password=self.data['password'],age=self.data['age'])
+    self.home_url = reverse('home')
+    self.login_url = reverse('login')
 
   def test_login_success(self):
-    self.home_url = reverse_lazy('home')
-    self.login_url = reverse('login')
     self.login_data = {'username':'people','password':'testpassword'}
     self.login_response = self.client.post(self.login_url, self.login_data)
-    self.assertRedirects(self.login_response, self.home_url)
+    self.assertEqual(self.login_response.status_code, 200)
+    self.assertRedirects(self.login_response, self.login_url)
     self.assertTemplateUsed(self.login_response, 'user/home.html')
+
