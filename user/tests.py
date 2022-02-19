@@ -158,6 +158,6 @@ class LoginSuccessTest(TestCase):
     self.login_data = {'username':'people','password':'testpassword'}
     self.login_response = self.client.post(self.login_url, self.login_data)
     self.assertEqual(self.login_response.status_code, 200)
-    self.assertRedirects(self.login_response, self.login_url)
+    self.assertRedirects(self.login_response, self.home_url)
     self.assertTemplateUsed(self.login_response, 'user/home.html')
 
