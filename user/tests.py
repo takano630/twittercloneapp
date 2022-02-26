@@ -159,6 +159,22 @@ class LoginSuccessTest(TestCase):
     self.assertRedirects(self.login_response, self.home_url)
 
 
+class LoginFailTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.home_url = reverse('home')
+    self.login_url = reverse('login')
+  
+  def test_mistake_password(self):
+    self.login_data = {'username':'people', 'password':'mistakepassword'}
+    self.login_response = self.client.post(self.login_url, self.login_data)
+    self.assertEqual(self.login_response.status_code, 200)
+
+  def test_not_exist_user(self):
+    self.login_data = {'username':'no_people', 'password':'testpassword'}
+    self.login_response = self.client.post(self.login_url, self.login_data)
+    self.assertEqual(self.login_response.status_code, 200)
+
 
     
     
