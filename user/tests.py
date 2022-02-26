@@ -189,4 +189,14 @@ class LogoutTest(TestCase):
     self.logout_response = self.client.get(self.logout_url)
     self.assertRedirects(self.logout_response, self.top_url)
     
-    
+
+class HomeTest(TestCase):
+  def setUp(self):
+    self.home_url = reverse('home')
+    self.login_url = reverse('login')
+  
+  def test_home_without_login(self):
+    self.home_response = self.client.get(self.home_url)
+    self.assertEqual(self.home_response.status_code, 302)
+
+
