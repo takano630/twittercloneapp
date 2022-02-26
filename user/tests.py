@@ -1,4 +1,4 @@
-from django.test import Client, TestCase
+from django.test import TestCase
 from django.urls import reverse, reverse_lazy
 
 from .models import Account
@@ -149,18 +149,18 @@ class SignUpFailTest(TestCase):
 
 class LoginSuccessTest(TestCase):
   def setUp(self):
-    self.data = {'username':'people', 'email':'test@test.test', 'password':'testpassword', 'age':'1'}
-    self.test_people = Account.objects.create(username=self.data['username'],email=self.data['email'],password=self.data['password'],age=self.data['age'])
+    self.data = {'username':'people', 'email':'test@test.test', 'password1':'testpassword', 'password2':'testpassword', 'age':'1'}
+    self.signup_url = reverse('signup')
+    self.client.post(self.signup_url, self.data)
     self.home_url = reverse('home')
     self.login_url = reverse('login')
 
   def test_login_success(self):
-    self.login_data = {'username':self.data['username'],'password':self.data['password']}
+    self.login_data = {'username':'people', 'password':'testpassword'}
     self.login_response = self.client.post(self.login_url, self.login_data)
-    self.assertEqual(self.login_response.status_code, 302)
     self.assertRedirects(self.login_response, self.home_url)
-    self.assertTemplateUsed(self.login_response, 'user/home.html')
+
+
 
     
     
-
