@@ -176,5 +176,17 @@ class LoginFailTest(TestCase):
     self.assertEqual(self.login_response.status_code, 200)
 
 
+class LogoutTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.top_url = reverse('top')
+    self.login_url = reverse('login')
+    self.login_data = {'username':'people', 'password':'testpassword'}
+    self.client.post(self.login_url, self.login_data)
+
+  def test_logout(self):
+    self.logout_url = reverse('logout')
+    self.logout_response = self.client.get(self.logout_url)
+    self.assertRedirects(self.logout_response, self.top_url)
     
     
