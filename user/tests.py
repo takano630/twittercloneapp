@@ -149,9 +149,7 @@ class SignUpFailTest(TestCase):
 
 class LoginSuccessTest(TestCase):
   def setUp(self):
-    self.data = {'username':'people', 'email':'test@test.test', 'password1':'testpassword', 'password2':'testpassword', 'age':'1'}
-    self.signup_url = reverse('signup')
-    self.client.post(self.signup_url, self.data)
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
     self.home_url = reverse('home')
     self.login_url = reverse('login')
 
