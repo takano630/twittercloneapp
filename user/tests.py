@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 
 from .models import Account
 
@@ -154,9 +154,9 @@ class LoginSuccessTest(TestCase):
     self.login_url = reverse('login')
 
   def test_login_success(self):
-    self.login_data = {'username':'people', 'password':'testpassword'}
-    self.login_response = self.client.post(self.login_url, self.login_data)
-    self.assertRedirects(self.login_response, self.home_url)
+    login_data = {'username':'people', 'password':'testpassword'}
+    login_response = self.client.post(self.login_url, login_data)
+    self.assertRedirects(login_response, self.home_url)
 
 
 class LoginFailTest(TestCase):
@@ -166,14 +166,14 @@ class LoginFailTest(TestCase):
     self.login_url = reverse('login')
   
   def test_mistake_password(self):
-    self.login_data = {'username':'people', 'password':'mistakepassword'}
-    self.login_response = self.client.post(self.login_url, self.login_data)
-    self.assertEqual(self.login_response.status_code, 200)
+    login_data = {'username':'people', 'password':'mistakepassword'}
+    login_response = self.client.post(self.login_url, login_data)
+    self.assertEqual(login_response.status_code, 200)
 
   def test_not_exist_user(self):
-    self.login_data = {'username':'no_people', 'password':'testpassword'}
-    self.login_response = self.client.post(self.login_url, self.login_data)
-    self.assertEqual(self.login_response.status_code, 200)
+    login_data = {'username':'no_people', 'password':'testpassword'}
+    login_response = self.client.post(self.login_url, login_data)
+    self.assertEqual(login_response.status_code, 200)
 
 
 class LogoutTest(TestCase):
@@ -185,9 +185,9 @@ class LogoutTest(TestCase):
     self.client.post(self.login_url, self.login_data)
 
   def test_logout(self):
-    self.logout_url = reverse('logout')
-    self.logout_response = self.client.get(self.logout_url)
-    self.assertRedirects(self.logout_response, self.top_url)
+    logout_url = reverse('logout')
+    logout_response = self.client.get(logout_url)
+    self.assertRedirects(logout_response, self.top_url)
     
 
 class HomeTest(TestCase):
@@ -196,7 +196,7 @@ class HomeTest(TestCase):
     self.login_url = reverse('login')
   
   def test_home_without_login(self):
-    self.home_response = self.client.get(self.home_url)
-    self.assertEqual(self.home_response.status_code, 302)
+    home_response = self.client.get(self.home_url)
+    self.assertEqual(home_response.status_code, 302)
 
 
