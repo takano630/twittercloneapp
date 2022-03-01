@@ -47,13 +47,12 @@ class SignUpSuccessTests(TestCase):
     self.url = reverse('signup')
     data = {'username':'people', 'email':'test@test.test', 'password1':'testpassword', 'password2':'testpassword', 'age':'1'}
     self.response = self.client.post(self.url, data)
+    self.home_url = reverse('home')
 
   def test_user_creation(self):
     self.assertTrue(Account.objects.exists())
-    self.assertEquals(self.response.status_code, 200)
+    self.assertRedirects(self.response, self.home_url)
 
-  def test_html_signup_success(self):
-    self.assertTemplateUsed(self.response, 'user/signup_successed.html')
 
 
 class SignUpFailTest(TestCase):
