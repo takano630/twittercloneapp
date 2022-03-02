@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .models import Account
-
+from twittercloneapp.settings import LOGIN_REDIRECT_URL
 
 class TopViewTests(TestCase):
   def setUp(self):
@@ -149,19 +149,17 @@ class SignUpFailTest(TestCase):
 class LoginSuccessTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
-    self.home_url = reverse('home')
     self.login_url = reverse('login')
 
   def test_login_success(self):
     login_data = {'username':'people', 'password':'testpassword'}
     login_response = self.client.post(self.login_url, login_data)
-    self.assertRedirects(login_response, self.home_url)
+    self.assertRedirects(login_response, LOGIN_REDIRECT_URL)
 
 
 class LoginFailTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
-    self.home_url = reverse('home')
     self.login_url = reverse('login')
   
   def test_mistake_password(self):
@@ -179,9 +177,7 @@ class LogoutTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
     self.top_url = reverse('top')
-    self.login_url = reverse('login')
-    self.login_data = {'username':'people', 'password':'testpassword'}
-    self.client.post(self.login_url, self.login_data)
+    self.client.login(username='people', password='testpassword')
 
   def test_logout(self):
     logout_url = reverse('logout')
@@ -189,11 +185,21 @@ class LogoutTest(TestCase):
     self.assertRedirects(logout_response, self.top_url)
     
 
-class HomeTest(TestCase):
+class HomeSucceseTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.home_url = reverse('home')
+    self.client.login(username='people', password='testpassword')
+
+  def test_home_succese(self):
+    home_response = self.client.get(self.home_url)
+    self.assertEqual(home_response.status_code, 200)
+
+
+class HomeFailTest(TestCase):
   def setUp(self):
     self.home_url = reverse('home')
-    self.login_url = reverse('login')
-  
+
   def test_home_without_login(self):
     home_response = self.client.get(self.home_url)
     self.assertEqual(home_response.status_code, 302)
