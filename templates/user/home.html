@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}home{% endblock %}
+
+{% block content %}
+    <h1>Twitter_clone_app!</h1>
+    {% if user.is_authenticated %}
+    <p>{{ user.username }}でログイン中</p>
+    <h2>
+      <a href="{% url 'logout' %}">ログアウト</a>
+    </h2>
+    {% else %}
+    <p>ログインしていません</p>
+    <p>
+      <a href="{% url 'top' %}">トップへ戻る</a>
+    </p>
+    {% endif %}
+{% endblock %}
+

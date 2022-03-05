@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .models import Account
-
+from twittercloneapp.settings import LOGIN_REDIRECT_URL
 
 class TopViewTests(TestCase):
   def setUp(self):
@@ -47,13 +47,12 @@ class SignUpSuccessTests(TestCase):
     self.url = reverse('signup')
     data = {'username':'people', 'email':'test@test.test', 'password1':'testpassword', 'password2':'testpassword', 'age':'1'}
     self.response = self.client.post(self.url, data)
+    self.home_url = reverse('home')
 
   def test_user_creation(self):
     self.assertTrue(Account.objects.exists())
-    self.assertEquals(self.response.status_code, 200)
+    self.assertRedirects(self.response, self.home_url)
 
-  def test_html_signup_success(self):
-    self.assertTemplateUsed(self.response, 'user/signup_successed.html')
 
 
 class SignUpFailTest(TestCase):
@@ -145,5 +144,64 @@ class SignUpFailTest(TestCase):
     self.assertEquals(self.response.status_code, 200)
     self.assertFalse(Account.objects.exists())
     self.assertTemplateUsed(self.response, 'user/signup.html')
+
+
+class LoginSuccessTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.login_url = reverse('login')
+
+  def test_login_success(self):
+    login_data = {'username':'people', 'password':'testpassword'}
+    login_response = self.client.post(self.login_url, login_data)
+    self.assertRedirects(login_response, LOGIN_REDIRECT_URL)
+
+
+class LoginFailTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.login_url = reverse('login')
+  
+  def test_mistake_password(self):
+    login_data = {'username':'people', 'password':'mistakepassword'}
+    login_response = self.client.post(self.login_url, login_data)
+    self.assertEqual(login_response.status_code, 200)
+
+  def test_not_exist_user(self):
+    login_data = {'username':'no_people', 'password':'testpassword'}
+    login_response = self.client.post(self.login_url, login_data)
+    self.assertEqual(login_response.status_code, 200)
+
+
+class LogoutTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.top_url = reverse('top')
+    self.client.login(username='people', password='testpassword')
+
+  def test_logout(self):
+    logout_url = reverse('logout')
+    logout_response = self.client.get(logout_url)
+    self.assertRedirects(logout_response, self.top_url)
+    
+
+class HomeSucceseTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.home_url = reverse('home')
+    self.client.login(username='people', password='testpassword')
+
+  def test_home_succese(self):
+    home_response = self.client.get(self.home_url)
+    self.assertEqual(home_response.status_code, 200)
+
+
+class HomeFailTest(TestCase):
+  def setUp(self):
+    self.home_url = reverse('home')
+
+  def test_home_without_login(self):
+    home_response = self.client.get(self.home_url)
+    self.assertEqual(home_response.status_code, 302)
 
 

@@ -1,6 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import redirect
 from django.views.generic.edit import CreateView
 from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import login, authenticate
 
 from .forms import AccountCreateForm
 
@@ -14,4 +16,13 @@ class SignupView(CreateView):
     
     def form_valid(self, form):
       user = form.save() 
-      return render(self.request, 'user/signup_successed.html') 
+      username = form.cleaned_data['username']
+      password = form.cleaned_data['password1']
+      user = authenticate(username=username, password=password)
+      login(self.request, user)
+      return redirect('home')
+
+
+class HomeView(LoginRequiredMixin, TemplateView):
+  template_name = 'user/home.html'
+
