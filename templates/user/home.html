@@ -4,16 +4,22 @@
 
 {% block content %}
     <h1>Twitter_clone_app!</h1>
-    {% if user.is_authenticated %}
     <p>{{ user.username }}でログイン中</p>
     <h2>
       <a href="{% url 'logout' %}">ログアウト</a>
     </h2>
-    {% else %}
-    <p>ログインしていません</p>
-    <p>
-      <a href="{% url 'top' %}">トップへ戻る</a>
-    </p>
-    {% endif %}
+    <h2>
+      <a href="{% url 'tweet' %}">ツイート</a>
+    </h2>
+    {% for tweet in tweet_list %}
+      <div>
+        <p>---------------------------------------</p>
+        <p>username: {{ tweet.user }}</p>
+        <p>published: {{ tweet.published_date }}</p>
+        <h3>{{ tweet.text }}</h3>
+        <p>---------------------------------------</p>
+      </div>
+    {% endfor %}
+    
 {% endblock %}
 

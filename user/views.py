@@ -1,10 +1,13 @@
-from django.shortcuts import redirect
+from pickle import TRUE
+from django.shortcuts import redirect, render
 from django.views.generic.edit import CreateView
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, authenticate
+from django.utils import timezone
 
-from .forms import AccountCreateForm
+from .forms import AccountCreateForm, TweetCreateForm
+from .models import Tweet
 
 class TopView(TemplateView):
   template_name = 'top.html'
@@ -23,6 +26,27 @@ class SignupView(CreateView):
       return redirect('home')
 
 
-class HomeView(LoginRequiredMixin, TemplateView):
+class HomeView(LoginRequiredMixin, ListView):
+  model = Tweet
+  queryset = Tweet.objects.order_by('published_date').reverse()
+  context_object_name = "tweet_list"
   template_name = 'user/home.html'
+
+
+class TweetView(LoginRequiredMixin, TemplateView):
+  def __init__(self):
+    self.form = TweetCreateForm()
+    
+  def get(self,request):
+        return render(request, "user/tweet.html", {'form':self.form})
+
+  def post(self,request):
+    if request.method == "POST":
+      self.form = TweetCreateForm(request.POST)
+      if self.form.is_valid():
+        tweet = self.form.save(commit=False)
+        tweet.user = request.user
+        tweet.published_date = timezone.now()
+        tweet.save()
+        return redirect('home')
 
