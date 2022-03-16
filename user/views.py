@@ -49,4 +49,6 @@ class TweetView(LoginRequiredMixin, TemplateView):
         tweet.published_date = timezone.now()
         tweet.save()
         return redirect('home')
+      else:
+        return redirect('tweet')
 

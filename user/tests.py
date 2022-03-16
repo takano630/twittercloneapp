@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Account
+from .models import Account, Tweet
 from twittercloneapp.settings import LOGIN_REDIRECT_URL
 
 class TopViewTests(TestCase):
@@ -203,5 +203,38 @@ class HomeFailTest(TestCase):
   def test_home_without_login(self):
     home_response = self.client.get(self.home_url)
     self.assertEqual(home_response.status_code, 302)
+
+
+class TweetSucceseTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.client.login(username='people', password='testpassword')
+    self.tweet_url = reverse('tweet')
+    self.tweet_data = {'text':'test'}
+    self.home_url = reverse('home')
+
+  def test_tweet_succese(self):
+    self.tweet_response = self.client.post(self.tweet_url, self.tweet_data)
+    self.assertRedirects(self.tweet_response, self.home_url)
+    tweet_number = Tweet.objects.count()
+    self.assertEqual(tweet_number, 1)
+  
+
+class TweetFailTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.tweet_url = reverse('tweet')
+
+  def test_tweet_fail(self):
+    self.client.login(username='people', password='testpassword')
+    tweet_data = {'text':''}
+    tweet_response = self.client.post(self.tweet_url, tweet_data)
+    self.assertRedirects(tweet_response, self.tweet_url)
+    tweet_number = Tweet.objects.count()
+    self.assertFalse(tweet_number)
+
+  def test_tweet_without_login(self):
+    tweet_get_response = self.client.get(self.tweet_url)
+    self.assertEqual(tweet_get_response.status_code, 302)
 
 
