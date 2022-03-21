@@ -213,11 +213,10 @@ class TweetSucceseTest(TestCase):
     self.tweet_data = {'text':'test'}
     self.home_url = reverse('home')
 
-  def test_tweet_succese(self):
+  def test_tweet_success(self):
     self.tweet_response = self.client.post(self.tweet_url, self.tweet_data)
     self.assertRedirects(self.tweet_response, self.home_url)
-    tweet_number = Tweet.objects.count()
-    self.assertEqual(tweet_number, 1)
+    self.assertEqual(Tweet.objects.count(), 1)
   
 
 class TweetFailTest(TestCase):
@@ -230,11 +229,8 @@ class TweetFailTest(TestCase):
     tweet_data = {'text':''}
     tweet_response = self.client.post(self.tweet_url, tweet_data)
     self.assertRedirects(tweet_response, self.tweet_url)
-    tweet_number = Tweet.objects.count()
-    self.assertFalse(tweet_number)
+    self.assertEqual(Tweet.objects.count, 0)
 
   def test_tweet_without_login(self):
     tweet_get_response = self.client.get(self.tweet_url)
     self.assertEqual(tweet_get_response.status_code, 302)
-
-

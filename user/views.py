@@ -33,22 +33,18 @@ class HomeView(LoginRequiredMixin, ListView):
   template_name = 'user/home.html'
 
 
-class TweetView(LoginRequiredMixin, TemplateView):
-  def __init__(self):
-    self.form = TweetCreateForm()
-    
-  def get(self,request):
-        return render(request, "user/tweet.html", {'form':self.form})
+class TweetView(LoginRequiredMixin, CreateView):
+  model = Tweet
+  fields = ['text']
+  template_name = "user/tweet.html"
 
   def post(self,request):
-    if request.method == "POST":
-      self.form = TweetCreateForm(request.POST)
-      if self.form.is_valid():
-        tweet = self.form.save(commit=False)
-        tweet.user = request.user
-        tweet.published_date = timezone.now()
-        tweet.save()
-        return redirect('home')
-      else:
-        return redirect('tweet')
-
+    self.form = TweetCreateForm(request.POST)
+    if self.form.is_valid():
+      tweet = self.form.save(commit=False)
+      tweet.user = request.user
+      tweet.published_date = timezone.now()
+      tweet.save()
+      return redirect('home')
+    else:
+      return redirect('tweet')

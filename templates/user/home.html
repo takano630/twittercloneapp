@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}home{% endblock %}
-
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/home_style.css' %}" type="text/css"/>
+{% endblock %}
+  
+  
 {% block content %}
     <h1>Twitter_clone_app!</h1>
     <p>{{ user.username }}でログイン中</p>
@@ -12,7 +17,7 @@
       <a href="{% url 'tweet' %}">ツイート</a>
     </h2>
     {% for tweet in tweet_list %}
-      <div>
+      <div class="tweet">
         <p>---------------------------------------</p>
         <p>username: {{ tweet.user }}</p>
         <p>published: {{ tweet.published_date }}</p>
