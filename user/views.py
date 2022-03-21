@@ -48,3 +48,5 @@ class TweetView(LoginRequiredMixin, CreateView):
       return redirect('home')
     else:
       return redirect('tweet')
+
+      
