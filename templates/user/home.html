@@ -18,11 +18,9 @@
     </h2>
     {% for tweet in tweet_list %}
       <div class="tweet">
-        <p>---------------------------------------</p>
         <p>username: {{ tweet.user }}</p>
         <p>published: {{ tweet.published_date }}</p>
         <h3>{{ tweet.text }}</h3>
-        <p>---------------------------------------</p>
       </div>
     {% endfor %}
     
