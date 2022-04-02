@@ -20,7 +20,9 @@
       <div class="tweet">
         <p>username: {{ tweet.user }}</p>
         <p>published: {{ tweet.published_date }}</p>
-        <h3>{{ tweet.text }}</h3>
+        <div id="text">
+          <h3>{{ tweet.text }}</h3>
+        </div>
       </div>
     {% endfor %}
     

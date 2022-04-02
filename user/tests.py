@@ -229,7 +229,7 @@ class TweetFailTest(TestCase):
     tweet_data = {'text':''}
     tweet_response = self.client.post(self.tweet_url, tweet_data)
     self.assertRedirects(tweet_response, self.tweet_url)
-    self.assertEqual(Tweet.objects.count, 0)
+    self.assertEqual(Tweet.objects.count(), 0)
 
   def test_tweet_without_login(self):
     tweet_get_response = self.client.get(self.tweet_url)
