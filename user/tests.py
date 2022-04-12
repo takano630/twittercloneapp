@@ -234,3 +234,23 @@ class TweetFailTest(TestCase):
   def test_tweet_without_login(self):
     tweet_get_response = self.client.get(self.tweet_url)
     self.assertEqual(tweet_get_response.status_code, 302)
+
+
+class TweetDeleteTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.tweet_url = reverse('tweet')
+    self.tweet_data = {'text':'test'}
+    self.home_url = reverse('home')
+    self.client.login(username='people', password='testpassword')
+    self.client.post(self.tweet_url, self.tweet_data)
+    self.tweet_delete_url = '/1/delete'
+  
+  def test_tweet_delete(self):
+    self.tweet_delete_response = self.client.post(self.tweet_delete_url, {"delete":"delete"})
+    self.assertRedirects(self.tweet_delete_response, self.home_url)
+
+  def test_tweet_delete_count(self):
+    self.client.post(self.tweet_delete_url, {"delete":"delete"})
+    self.assertEqual(Tweet.objects.count(), 0)
+

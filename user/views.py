@@ -47,6 +47,6 @@ class TweetView(LoginRequiredMixin, CreateView):
       return redirect('tweet')
 
 
-class DeleteTweetView(DeleteView):
+class DeleteTweetView(DeleteView, LoginRequiredMixin):
   model = Tweet
   success_url = reverse_lazy('home')
