@@ -19,10 +19,13 @@
     {% for tweet in tweet_list %}
       <div class="tweet">
         <p>username: {{ tweet.user }}</p>
-        <p>published: {{ tweet.published_date }}</p>
+        <p>published: {{ tweet.published_at }}</p>
         <div id="text">
           <h3>{{ tweet.text }}</h3>
         </div>
+        <p>
+          <a href="{% url 'delete' tweet.pk %}">削除</a>
+        </p>
       </div>
     {% endfor %}
     

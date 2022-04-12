@@ -14,4 +14,4 @@ class TweetCreateForm(forms.ModelForm):
 
     class Meta():
         model = Tweet
-        fields = ('user', 'text', 'published_date',)
+        fields = ('text',)

@@ -10,4 +10,4 @@ class Account(AbstractUser):
 class Tweet(models.Model):
   user = models.ForeignKey('Account', on_delete=models.CASCADE, blank=True)
   text = models.TextField(max_length=200)
-  published_date = models.DateTimeField(default=timezone.now, blank=True)
+  published_at = models.DateTimeField(default=timezone.now, blank=True)
