@@ -23,9 +23,12 @@
         <div id="text">
           <h3>{{ tweet.text }}</h3>
         </div>
-        <p>
-          <a href="{% url 'delete' tweet.pk %}">削除</a>
-        </p>
+        {% if tweet.user == user.username %}
+          <p id="delete">
+            <a href="{% url 'delete' tweet.pk %}">削除</a>
+          </p>
+        {% endif %}
+    
       </div>
     {% endfor %}
     
