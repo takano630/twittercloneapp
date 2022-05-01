@@ -1,7 +1,8 @@
+from urllib import request
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, ListView, DeleteView, CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
 
 from .forms import AccountCreateForm, TweetCreateForm
@@ -47,6 +48,16 @@ class TweetView(LoginRequiredMixin, CreateView):
       return redirect('tweet')
 
 
-class DeleteTweetView(DeleteView, LoginRequiredMixin):
+
+class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
   model = Tweet
   success_url = reverse_lazy('home')
+
+  def test_func(self, **kwargs):
+     pk = self.kwargs["pk"]
+     tweet = Tweet.objects.get(pk=pk)
+     return (tweet.user == self.request.user) 
+
+  def handle_no_permission(self):
+    return redirect('home')
+
