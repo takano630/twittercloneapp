@@ -1,4 +1,3 @@
-from urllib import request
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, ListView, DeleteView, CreateView
@@ -53,11 +52,10 @@ class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
   model = Tweet
   success_url = reverse_lazy('home')
 
-  def test_func(self, **kwargs):
-     pk = self.kwargs["pk"]
-     tweet = Tweet.objects.get(pk=pk)
-     return (tweet.user == self.request.user) 
+  def test_func(self):
+    pk = self.kwargs["pk"]
+    tweet = Tweet.objects.get(pk=pk)
+    return tweet.user == self.request.user
 
   def handle_no_permission(self):
     return redirect('home')
-
