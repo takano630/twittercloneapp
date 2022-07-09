@@ -185,7 +185,7 @@ class LogoutTest(TestCase):
     self.assertRedirects(logout_response, self.top_url)
     
 
-class HomeSucceseTest(TestCase):
+class HomeSuccessTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
     self.home_url = reverse('home')
@@ -205,7 +205,7 @@ class HomeFailTest(TestCase):
     self.assertEqual(home_response.status_code, 302)
 
 
-class TweetSucceseTest(TestCase):
+class TweetSuccessTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
     self.client.login(username='people', password='testpassword')
@@ -236,7 +236,7 @@ class TweetFailTest(TestCase):
     self.assertEqual(tweet_get_response.status_code, 302)
 
 
-class TweetDeleteTest(TestCase):
+class TweetDeleteSuccessTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
     self.tweet_url = reverse('tweet')
@@ -254,3 +254,23 @@ class TweetDeleteTest(TestCase):
     self.client.post(self.tweet_delete_url, {"delete":"delete"})
     self.assertEqual(Tweet.objects.count(), 0)
 
+class TweetDeleteFailTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    Account.objects.create_user(username='differentuser', email='test@test.test', password='testpassword', age='2')
+    self.tweet_url = reverse('tweet')
+    self.tweet_data = {'text':'test'}
+    self.home_url = reverse('home')
+    self.client.login(username='people', password='testpassword')
+    self.client.post(self.tweet_url, self.tweet_data)
+    self.tweet_delete_url = '/1/delete'
+
+  def test_failure_post_with_not_exist_tweet(self):
+    self.tweet_delete_not_exist_url = '/2/delete/'
+    self.tweet_delete_not_exist_response = self.client.post(self.tweet_delete_not_exist_url, {"delete":"delete"})
+    self.assertEqual(self.tweet_delete_not_exist_response.status_code, 404)    
+
+  def test_failure_post_with_incorrect_user(self):
+    self.client.login(username='differentuser', password='testpassword')
+    self.tweet_delete_response = self.client.post(self.tweet_delete_url, {"delete":"delete"})
+    self.assertRedirects(self.tweet_delete_response, self.home_url)

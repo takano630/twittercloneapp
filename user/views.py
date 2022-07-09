@@ -1,11 +1,11 @@
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, DeleteView, CreateView
+from django.urls import reverse_lazy, reverse
+from django.views.generic import TemplateView, ListView, DeleteView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
 
 from .forms import AccountCreateForm, TweetCreateForm
-from .models import Tweet
+from .models import Tweet, Account
 
 class TopView(TemplateView):
   template_name = 'top.html'
@@ -59,3 +59,21 @@ class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
 
   def handle_no_permission(self):
     return redirect('home')
+
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+  template_name = 'user/profile.html'
+
+
+class AccountUpdateView(UpdateView):
+  model = Account
+  template_name = 'user/update.html'
+  fields = ['username', 'email', 'age']
+
+  def get_success_url(self):
+    return reverse('profile')
+
+  def get_object(self, queryset=None):
+        return Account.objects.get(id=self.request.user.id)
+
+  
