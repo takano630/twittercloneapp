@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}tweet画面{% endblock %}
+
+{% block content %}
+<h1>ツイート</h1>
+<form action="{% url 'tweet' %}" method="POST">
+  {{ form.text }}
+  {% csrf_token %}
+  <input type="submit" value="送信">
+</form>
+{% endblock %}
+

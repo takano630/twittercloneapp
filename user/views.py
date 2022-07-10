@@ -1,10 +1,11 @@
 from django.shortcuts import redirect
-from django.views.generic.edit import CreateView
-from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy, reverse
+from django.views.generic import TemplateView, ListView, DeleteView, CreateView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
 
-from .forms import AccountCreateForm
+from .forms import AccountCreateForm, ProfileForm, TweetCreateForm
+from .models import Tweet, Account
 
 class TopView(TemplateView):
   template_name = 'top.html'
@@ -23,6 +24,50 @@ class SignupView(CreateView):
       return redirect('home')
 
 
-class HomeView(LoginRequiredMixin, TemplateView):
+class HomeView(LoginRequiredMixin, ListView):
+  model = Tweet
+  queryset = Tweet.objects.order_by('published_at').reverse()
+  context_object_name = "tweet_list"
   template_name = 'user/home.html'
+
+
+class TweetView(LoginRequiredMixin, CreateView):
+  model = Tweet
+  fields = ['text']
+  template_name = "user/tweet.html"
+
+  def post(self, request):
+    self.form = TweetCreateForm(request.POST)
+    if self.form.is_valid():
+      tweet = self.form.save(commit=False)
+      tweet.user = request.user      
+      tweet.save()
+      return redirect('home')
+    else:
+      return redirect('tweet')
+
+
+
+class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
+  model = Tweet
+  success_url = reverse_lazy('home')
+
+  def test_func(self):
+    pk = self.kwargs["pk"]
+    tweet = Tweet.objects.get(pk=pk)
+    return tweet.user == self.request.user
+
+  def handle_no_permission(self):
+    return redirect('home')
+
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+  template_name = 'user/profile.html'
+
+
+class AccountUpdateView(UpdateView):
+  model = Account
+  template_name = 'user/update.html'
+  form_class = ProfileForm
+  success_url = reverse_lazy('profile')
 

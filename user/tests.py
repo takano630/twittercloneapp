@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Account
+from .models import Account, Tweet
 from twittercloneapp.settings import LOGIN_REDIRECT_URL
 
 class TopViewTests(TestCase):
@@ -185,7 +185,7 @@ class LogoutTest(TestCase):
     self.assertRedirects(logout_response, self.top_url)
     
 
-class HomeSucceseTest(TestCase):
+class HomeSuccessTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
     self.home_url = reverse('home')
@@ -205,3 +205,72 @@ class HomeFailTest(TestCase):
     self.assertEqual(home_response.status_code, 302)
 
 
+class TweetSuccessTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.client.login(username='people', password='testpassword')
+    self.tweet_url = reverse('tweet')
+    self.tweet_data = {'text':'test'}
+    self.home_url = reverse('home')
+
+  def test_tweet_success(self):
+    self.tweet_response = self.client.post(self.tweet_url, self.tweet_data)
+    self.assertRedirects(self.tweet_response, self.home_url)
+    self.assertEqual(Tweet.objects.count(), 1)
+  
+
+class TweetFailTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.tweet_url = reverse('tweet')
+
+  def test_tweet_fail(self):
+    self.client.login(username='people', password='testpassword')
+    tweet_data = {'text':''}
+    tweet_response = self.client.post(self.tweet_url, tweet_data)
+    self.assertRedirects(tweet_response, self.tweet_url)
+    self.assertEqual(Tweet.objects.count(), 0)
+
+  def test_tweet_without_login(self):
+    tweet_get_response = self.client.get(self.tweet_url)
+    self.assertEqual(tweet_get_response.status_code, 302)
+
+
+class TweetDeleteSuccessTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.tweet_url = reverse('tweet')
+    self.tweet_data = {'text':'test'}
+    self.home_url = reverse('home')
+    self.client.login(username='people', password='testpassword')
+    self.client.post(self.tweet_url, self.tweet_data)
+    self.tweet_delete_url = '/1/delete'
+  
+  def test_tweet_delete(self):
+    self.tweet_delete_response = self.client.post(self.tweet_delete_url, {"delete":"delete"})
+    self.assertRedirects(self.tweet_delete_response, self.home_url)
+
+  def test_tweet_delete_count(self):
+    self.client.post(self.tweet_delete_url, {"delete":"delete"})
+    self.assertEqual(Tweet.objects.count(), 0)
+
+class TweetDeleteFailTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    Account.objects.create_user(username='differentuser', email='test@test.test', password='testpassword', age='2')
+    self.tweet_url = reverse('tweet')
+    self.tweet_data = {'text':'test'}
+    self.home_url = reverse('home')
+    self.client.login(username='people', password='testpassword')
+    self.client.post(self.tweet_url, self.tweet_data)
+    self.tweet_delete_url = '/1/delete'
+
+  def test_failure_post_with_not_exist_tweet(self):
+    self.tweet_delete_not_exist_url = '/2/delete/'
+    self.tweet_delete_not_exist_response = self.client.post(self.tweet_delete_not_exist_url, {"delete":"delete"})
+    self.assertEqual(self.tweet_delete_not_exist_response.status_code, 404)    
+
+  def test_failure_post_with_incorrect_user(self):
+    self.client.login(username='differentuser', password='testpassword')
+    self.tweet_delete_response = self.client.post(self.tweet_delete_url, {"delete":"delete"})
+    self.assertRedirects(self.tweet_delete_response, self.home_url)
