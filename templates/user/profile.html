@@ -12,7 +12,7 @@
     <p>メールアドレス : {{ user.email }}</p>
     <p>年齢 : {{ user.age }}</p>
     <h2>
-        <a href="{% url 'update' %}">プロフィール編集</a>
+        <a href="{% url 'update' user.pk %}">プロフィール編集</a>
     </h2>
     
 {% endblock %}

@@ -4,7 +4,7 @@ from django.views.generic import TemplateView, ListView, DeleteView, CreateView,
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
 
-from .forms import AccountCreateForm, TweetCreateForm
+from .forms import AccountCreateForm, ProfileForm, TweetCreateForm
 from .models import Tweet, Account
 
 class TopView(TemplateView):
@@ -68,12 +68,6 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 class AccountUpdateView(UpdateView):
   model = Account
   template_name = 'user/update.html'
-  fields = ['username', 'email', 'age']
+  form_class = ProfileForm
+  success_url = reverse_lazy('profile')
 
-  def get_success_url(self):
-    return reverse('profile')
-
-  def get_object(self, queryset=None):
-        return Account.objects.get(id=self.request.user.id)
-
-  

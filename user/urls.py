@@ -10,5 +10,5 @@ urlpatterns = [
     path('tweet', views.TweetView.as_view(), name='tweet'),
     path('<int:pk>/delete', views.DeleteTweetView.as_view(), name='delete'),
     path('profile', views.ProfileView.as_view(), name='profile'),
-    path('update', views.AccountUpdateView.as_view(), name='update'),
+    path('update/<int:pk>', views.AccountUpdateView.as_view(), name='update'),
 ]

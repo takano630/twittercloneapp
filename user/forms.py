@@ -10,6 +10,13 @@ class AccountCreateForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2', 'age')
 
 
+class ProfileForm(forms.ModelForm):
+
+    class Meta:
+        model = Account
+        fields = ('username', 'email', 'age')
+
+
 class TweetCreateForm(forms.ModelForm):
 
     class Meta():
