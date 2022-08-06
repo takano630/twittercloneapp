@@ -61,13 +61,29 @@ class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
     return redirect('home')
 
 
-class ProfileView(LoginRequiredMixin, TemplateView):
+class ProfileView(TemplateView):
   template_name = 'user/profile.html'
 
+  def get_context_data(self, *args, **kwargs):
+     context = super().get_context_data(*args, **kwargs)
+     user_profile = Account.objects.get(username = self.kwargs['name'])
+     context['username'] = user_profile.username
+     context['email'] = user_profile.email
+     context['age'] = user_profile.age
+     return context
 
-class AccountUpdateView(LoginRequiredMixin, UpdateView):
+
+class AccountUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
   model = Account
   template_name = 'user/update.html'
   form_class = ProfileForm
-  success_url = reverse_lazy('profile')
+  success_url = reverse_lazy('home')
+
+  def test_func(self):
+    pk = self.kwargs['pk']
+    self.user = Account.objects.get(pk = pk)
+    return self.user.username == self.request.user.username
+
+  def handle_no_permission(self):
+    return redirect('profile', name = self.user.username)
 

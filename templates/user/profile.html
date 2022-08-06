@@ -8,12 +8,12 @@
   
 {% block content %}
     <h1>プロフィール</h1>
-    <p>ユーザー名 : {{ user.username }}</p>
-    <p>メールアドレス : {{ user.email }}</p>
-    <p>年齢 : {{ user.age }}</p>
+    <p>ユーザー名 : {{ username }}</p>
+    <p>メールアドレス : {{ email }}</p>
+    <p>年齢 : {{ age }}</p>
     <h2>
         <a href="{% url 'update' user.pk %}">プロフィール編集</a>
     </h2>
-    
+    <p>{{ user.username }}でログイン中</p>
 {% endblock %}
 

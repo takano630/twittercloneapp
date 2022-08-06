@@ -11,7 +11,7 @@
     <h1>Twitter_clone_app!</h1>
     <p>{{ user.username }}でログイン中</p>
     <h2>
-      <a href="{% url 'profile' %}">プロフィール</a>
+      <a href="{% url 'profile' user.username %}">プロフィール</a>
     </h2>
     <h2>
       <a href="{% url 'logout' %}">ログアウト</a>
@@ -32,6 +32,5 @@
       
       </div>
     {% endfor %}
-    
 {% endblock %}
 
