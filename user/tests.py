@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import Account, Tweet
 from twittercloneapp.settings import LOGIN_REDIRECT_URL
@@ -187,14 +188,19 @@ class LogoutTest(TestCase):
 
 class HomeSuccessTest(TestCase):
   def setUp(self):
-    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    testpeople = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    Tweet.objects.create(user = testpeople, text = 'testtest', published_at = timezone.now())
     self.home_url = reverse('home')
     self.client.login(username='people', password='testpassword')
+
 
   def test_home_succese(self):
     home_response = self.client.get(self.home_url)
     self.assertEqual(home_response.status_code, 200)
-
+  
+  def test_succese_get_tweet(self):
+    home_response = self.client.get(self.home_url)
+    self.assertQuerysetEqual(home_response.context["object_list"], ['<Tweet: Tweet object (1)>'])
 
 class HomeFailTest(TestCase):
   def setUp(self):
@@ -213,8 +219,13 @@ class TweetSuccessTest(TestCase):
     self.tweet_data = {'text':'test'}
     self.home_url = reverse('home')
 
+  def test_succese_get(self):
+    self.response = self.client.get(self.tweet_url)
+    self.assertEqual(self.response.status_code, 200)
+
   def test_tweet_success(self):
     self.tweet_response = self.client.post(self.tweet_url, self.tweet_data)
+    self.assertEqual(self.tweet_response.status_code, 302)
     self.assertRedirects(self.tweet_response, self.home_url)
     self.assertEqual(Tweet.objects.count(), 1)
   
@@ -274,3 +285,88 @@ class TweetDeleteFailTest(TestCase):
     self.client.login(username='differentuser', password='testpassword')
     self.tweet_delete_response = self.client.post(self.tweet_delete_url, {"delete":"delete"})
     self.assertRedirects(self.tweet_delete_response, self.home_url)
+
+ 
+class ProfileTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
+    self.profile_url = reverse('profile')
+
+  def test_succese_get(self):
+    self.client.login(username='people', password='testpassword')
+    self.response = self.client.get(self.profile_url)
+    self.assertEqual(self.response.status_code, 200)
+  
+class ProfileFailureTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
+    self.profile_url = reverse('profile')
+
+  def test_not_login(self):
+    self.response = self.client.get(self.profile_url)
+    self.assertEqual(self.response.status_code, 302)
+
+
+class UpdateSucceseTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
+    self.profile_url = reverse('profile')
+    self.update_url = '/update/1'
+
+  def test_succese_get(self):
+    self.client.login(username='people', password='testpassword')
+    self.get_response = self.client.get(self.update_url)
+    self.assertEqual(self.get_response.status_code, 200)
+
+  def test_update(self):
+    self.client.login(username='people', password='testpassword')
+    self.update_data = {'username':'people2', 'email':'test2@test.test', 'age':'2'}
+    self.update_response = self.client.post(self.update_url, self.update_data)
+    self.assertEqual(self.update_response.status_code, 302)
+    self.assertEqual(Account.objects.count(), 1)
+
+class UpdateFailureTest(TestCase):
+  def setUp(self):
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
+    self.profile_url = reverse('profile')
+    self.update_url = '/update/1'
+    self.data = {'username':'testpeople', 'email':'test@test.test', 'age':'1'}
+
+  def test_not_exist_user(self):
+    self.client.login(username='people', password='testpassword')
+    self.no_user_update_url = '/update/2'
+    self.response = self.client.get(self.no_user_update_url)
+    self.assertEqual(self.response.status_code, 404)
+
+  def test_not_login(self):
+    self.get_response = self.client.get(self.update_url)
+    self.assertEqual(self.get_response.status_code, 302)
+
+  def test_data_empty(self):
+    empty_data = {}
+    self.client.login(username='people', password='testpassword')
+    self.update_response = self.client.post(self.update_url, empty_data)
+    self.assertEqual(self.update_response.status_code, 200)
+    self.assertEqual(Account.objects.count(), 1)
+  
+  def test_username_empty(self):
+    self.data['username'] = ''
+    self.client.login(username='people', password='testpassword')
+    self.update_response = self.client.post(self.update_url, self.data)
+    self.assertEqual(self.update_response.status_code, 200)
+    self.assertEqual(Account.objects.count(), 1)
+  
+  def test_email_empty(self):
+    self.data['email'] = ''
+    self.client.login(username='people', password='testpassword')
+    self.update_response = self.client.post(self.update_url, self.data)
+    self.assertEqual(self.update_response.status_code, 200)
+    self.assertEqual(Account.objects.count(), 1)
+ 
+  def test_age_empty(self):
+    self.data['age'] = ''
+    self.client.login(username='people', password='testpassword')
+    self.update_response = self.client.post(self.update_url, self.data)
+    self.assertEqual(self.update_response.status_code, 200)
+    self.assertEqual(Account.objects.count(), 1)
+

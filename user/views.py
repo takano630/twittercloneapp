@@ -65,7 +65,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
   template_name = 'user/profile.html'
 
 
-class AccountUpdateView(UpdateView):
+class AccountUpdateView(LoginRequiredMixin, UpdateView):
   model = Account
   template_name = 'user/update.html'
   form_class = ProfileForm
