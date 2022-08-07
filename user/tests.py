@@ -290,27 +290,35 @@ class TweetDeleteFailTest(TestCase):
 class ProfileTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
-    self.profile_url = reverse('profile')
+    Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1')
+    self.profile_url = '/profile/people'
+    self.profile_different_url = '/profile/differentpeople'
 
   def test_succese_get(self):
     self.client.login(username='people', password='testpassword')
     self.response = self.client.get(self.profile_url)
     self.assertEqual(self.response.status_code, 200)
+
+  def test_different_user_profile(self):
+    self.client.login(username='people', password='testpassword')
+    self.response = self.client.get(self.profile_different_url)
+    self.assertEqual(self.response.status_code, 200)
+
   
 class ProfileFailureTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
-    self.profile_url = reverse('profile')
+    self.profile_url = '/profile/people/'
 
   def test_not_login(self):
     self.response = self.client.get(self.profile_url)
-    self.assertEqual(self.response.status_code, 302)
+    self.assertEqual(self.response.status_code, 404)
 
 
 class UpdateSucceseTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
-    self.profile_url = reverse('profile')
+    self.profile_url = '/profile/people'
     self.update_url = '/update/1'
 
   def test_succese_get(self):
@@ -328,15 +336,17 @@ class UpdateSucceseTest(TestCase):
 class UpdateFailureTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
-    self.profile_url = reverse('profile')
+    self.profile_url = '/profile/people'
     self.update_url = '/update/1'
     self.data = {'username':'testpeople', 'email':'test@test.test', 'age':'1'}
 
-  def test_not_exist_user(self):
+  def test_different_user(self):
+    Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1')
     self.client.login(username='people', password='testpassword')
-    self.no_user_update_url = '/update/2'
-    self.response = self.client.get(self.no_user_update_url)
-    self.assertEqual(self.response.status_code, 404)
+    self.update_different_url = '/update/2'
+    self.profile_different_url = '/profile/differentpeople'
+    self.response = self.client.get(self.update_different_url)
+    self.assertRedirects(self.response, self.profile_different_url)
 
   def test_not_login(self):
     self.get_response = self.client.get(self.update_url)
