@@ -202,6 +202,7 @@ class HomeSuccessTest(TestCase):
     home_response = self.client.get(self.home_url)
     self.assertQuerysetEqual(home_response.context["object_list"], ['<Tweet: Tweet object (1)>'])
 
+
 class HomeFailTest(TestCase):
   def setUp(self):
     self.home_url = reverse('home')
@@ -249,13 +250,14 @@ class TweetFailTest(TestCase):
 
 class TweetDeleteSuccessTest(TestCase):
   def setUp(self):
-    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
-    self.tweet_url = reverse('tweet')
-    self.tweet_data = {'text':'test'}
+    self.account_pk = 1
+    self.tweet_pk = 1
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk=self.account_pk)
+    self.user = Account.objects.get(pk=self.account_pk)
     self.home_url = reverse('home')
+    Tweet.objects.create(user=self.user, text='text', pk= self.tweet_pk)
+    self.tweet_delete_url = '/'+str(self.tweet_pk)+'/delete'
     self.client.login(username='people', password='testpassword')
-    self.client.post(self.tweet_url, self.tweet_data)
-    self.tweet_delete_url = '/1/delete'
   
   def test_tweet_delete(self):
     self.tweet_delete_response = self.client.post(self.tweet_delete_url, {"delete":"delete"})
@@ -265,19 +267,23 @@ class TweetDeleteSuccessTest(TestCase):
     self.client.post(self.tweet_delete_url, {"delete":"delete"})
     self.assertEqual(Tweet.objects.count(), 0)
 
+
 class TweetDeleteFailTest(TestCase):
   def setUp(self):
-    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
-    Account.objects.create_user(username='differentuser', email='test@test.test', password='testpassword', age='2')
-    self.tweet_url = reverse('tweet')
-    self.tweet_data = {'text':'test'}
+    self.account_pk = 1
+    self.account_different_pk = 2
+    self.tweet_pk = 1
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk=self.account_pk)
+    Account.objects.create_user(username='differentuser', email='test@test.test', password='testpassword', age='2', pk=self.account_different_pk)
+    self.user = Account.objects.get(pk=self.account_pk)
+    Tweet.objects.create(user=self.user, text='text', pk= self.tweet_pk)
     self.home_url = reverse('home')
     self.client.login(username='people', password='testpassword')
-    self.client.post(self.tweet_url, self.tweet_data)
-    self.tweet_delete_url = '/1/delete'
+    self.tweet_delete_url = '/'+str(self.tweet_pk)+'/delete'
 
   def test_failure_post_with_not_exist_tweet(self):
-    self.tweet_delete_not_exist_url = '/2/delete/'
+    self.tweet_not_exist_pk = 2
+    self.tweet_delete_not_exist_url = '/'+str(self.tweet_not_exist_pk)+'/delete'
     self.tweet_delete_not_exist_response = self.client.post(self.tweet_delete_not_exist_url, {"delete":"delete"})
     self.assertEqual(self.tweet_delete_not_exist_response.status_code, 404)    
 
@@ -289,10 +295,12 @@ class TweetDeleteFailTest(TestCase):
  
 class ProfileTest(TestCase):
   def setUp(self):
-    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
-    Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1')
-    self.profile_url = '/profile/people'
-    self.profile_different_url = '/profile/differentpeople'
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1',pk = '1')
+    Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1', pk = '2')
+    self.people = Account.objects.get(pk = 1)
+    self.different_people = Account.objects.get(pk = 2)
+    self.profile_url = '/profile/'+self.people.username
+    self.profile_different_url = '/profile/'+self.different_people.username
 
   def test_succese_get(self):
     self.client.login(username='people', password='testpassword')
@@ -307,46 +315,64 @@ class ProfileTest(TestCase):
   
 class ProfileFailureTest(TestCase):
   def setUp(self):
-    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
-    self.profile_url = '/profile/people/'
+    self.account_pk = 1
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = self.account_pk)
+    self.people = Account.objects.get(pk = self.account_pk)
+    self.profile_url = '/profile/'+self.people.username
 
-  def test_not_login(self):
-    self.response = self.client.get(self.profile_url)
-    self.assertEqual(self.response.status_code, 404)
+  def test_failure_get_with_not_exist_user(self):
+    self.username_not_exist = 'not_exist'
+    self.profile_not_exist_url = '/profile/'+ self.username_not_exist
+    self.profile_not_exist_response = self.client.get(self.profile_not_exist_url)
+    self.assertEqual(self.profile_not_exist_response.status_code, 404)
 
 
 class UpdateSucceseTest(TestCase):
   def setUp(self):
-    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
-    self.profile_url = '/profile/people'
-    self.update_url = '/update/1'
+    self.account_pk = 1
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = self.account_pk)
+    self.people = Account.objects.get(pk = self.account_pk)
+    self.profile_url = '/profile/'+self.people.username
+    self.update_url = '/update/'+str(self.account_pk)
 
   def test_succese_get(self):
     self.client.login(username='people', password='testpassword')
     self.get_response = self.client.get(self.update_url)
     self.assertEqual(self.get_response.status_code, 200)
 
-  def test_update(self):
+  def test_succese_post(self):
     self.client.login(username='people', password='testpassword')
     self.update_data = {'username':'people2', 'email':'test2@test.test', 'age':'2'}
     self.update_response = self.client.post(self.update_url, self.update_data)
     self.assertEqual(self.update_response.status_code, 302)
     self.assertEqual(Account.objects.count(), 1)
 
+
 class UpdateFailureTest(TestCase):
   def setUp(self):
-    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1')
-    self.profile_url = '/profile/people'
-    self.update_url = '/update/1'
+    self.account_pk = 1
+    Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1', pk= self.account_pk)
+    self.people = Account.objects.get(pk = self.account_pk)
+    self.profile_url = '/profile/'+self.people.username
+    self.update_url = '/update/'+str(self.account_pk)
     self.data = {'username':'testpeople', 'email':'test@test.test', 'age':'1'}
 
   def test_different_user(self):
-    Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1')
+    self.account_different_pk = 2
+    Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1', pk = self.account_different_pk)
+    self.different_people = Account.objects.get(pk = self.account_different_pk)
+    self.profile_different_url = '/profile/'+self.different_people.username
+    self.update_different_url = '/update/'+str(self.account_different_pk)
     self.client.login(username='people', password='testpassword')
-    self.update_different_url = '/update/2'
-    self.profile_different_url = '/profile/differentpeople'
-    self.response = self.client.get(self.update_different_url)
-    self.assertRedirects(self.response, self.profile_different_url)
+    self.update_response = self.client.post(self.update_different_url, self.data)
+    self.assertRedirects(self.update_response, self.profile_different_url)
+
+  def test_failure_post_with_not_exist(self):
+    self.pk_not_exist = 2
+    self.url_not_exist = '/update/' + str(self.pk_not_exist)
+    self.update_data = {'username':'people2', 'email':'test2@test.test', 'age':'2'}
+    self.update_response = self.client.post(self.url_not_exist, self.update_data)
+    self.assertEqual(self.update_response.status_code, 404)
 
   def test_not_login(self):
     self.get_response = self.client.get(self.update_url)
@@ -380,3 +406,14 @@ class UpdateFailureTest(TestCase):
     self.assertEqual(self.update_response.status_code, 200)
     self.assertEqual(Account.objects.count(), 1)
 
+  def test_failure_post_with_incorrect_user(self):
+    self.account_same_name = 'differentpeople'
+    Account.objects.create_user(username=self.account_same_name, email='test@test.test', password='testpassword',age='1')
+    self.update_data = {'username':self.account_same_name, 'email':'test@test.test', 'age':'1'}
+    self.client.login(username='people', password='testpassword')
+    self.update_response = self.client.post(self.update_url, self.update_data)
+    self.assertEqual(self.update_response.status_code, 200)
+    self.assertEqual(Account.objects.count(), 2)
+    self.client.post(self.update_url, self.update_data)
+    self.update_people = Account.objects.get(pk = self.account_pk)
+    self.assertEqual(self.update_people.username, 'people')

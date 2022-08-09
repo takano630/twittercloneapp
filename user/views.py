@@ -47,14 +47,12 @@ class TweetView(LoginRequiredMixin, CreateView):
       return redirect('tweet')
 
 
-
 class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
   model = Tweet
   success_url = reverse_lazy('home')
 
   def test_func(self):
-    pk = self.kwargs["pk"]
-    tweet = Tweet.objects.get(pk=pk)
+    tweet = self.get_object()
     return tweet.user == self.request.user
 
   def handle_no_permission(self):
@@ -80,10 +78,8 @@ class AccountUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
   success_url = reverse_lazy('home')
 
   def test_func(self):
-    pk = self.kwargs['pk']
-    self.user = Account.objects.get(pk = pk)
+    self.user = self.get_object()
     return self.user.username == self.request.user.username
 
   def handle_no_permission(self):
     return redirect('profile', name = self.user.username)
-
