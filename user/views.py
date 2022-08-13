@@ -1,4 +1,4 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import TemplateView, ListView, DeleteView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -64,7 +64,7 @@ class ProfileView(TemplateView):
 
   def get_context_data(self, *args, **kwargs):
      context = super().get_context_data(*args, **kwargs)
-     user_profile = Account.objects.get(username = self.kwargs['name'])
+     user_profile = get_object_or_404(Account, username = self.kwargs['name'])
      context['username'] = user_profile.username
      context['email'] = user_profile.email
      context['age'] = user_profile.age
