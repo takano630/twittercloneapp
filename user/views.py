@@ -43,8 +43,6 @@ class TweetView(LoginRequiredMixin, CreateView):
       tweet.user = request.user      
       tweet.save()
       return redirect('home')
-    else:
-      return redirect('tweet')
 
 
 class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
