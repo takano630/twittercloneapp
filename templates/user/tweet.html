@@ -6,7 +6,6 @@
 <h1>ツイート</h1>
 <form action="{% url 'tweet' %}" method="POST">
   {{ form.text }}
-  {{ form.errors }}
   {% csrf_token %}
   <input type="submit" value="送信">
 </form>
