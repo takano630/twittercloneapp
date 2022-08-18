@@ -4,6 +4,7 @@
 
 {% block content %}
 <h1>ツイート</h1>
+{{ form.errors }}
 <form action="{% url 'tweet' %}" method="POST">
   {{ form.text }}
   {% csrf_token %}

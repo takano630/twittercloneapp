@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
-from django.views.generic import TemplateView, ListView, DeleteView, CreateView, UpdateView
+from django.views.generic import TemplateView, ListView, DeleteView, CreateView, UpdateView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
 
@@ -33,7 +33,7 @@ class HomeView(LoginRequiredMixin, ListView):
 
 class TweetView(LoginRequiredMixin, CreateView):
   model = Tweet
-  fields = ['text']
+  form_class = TweetCreateForm
   template_name = "user/tweet.html"
 
   def post(self, request):
@@ -43,6 +43,7 @@ class TweetView(LoginRequiredMixin, CreateView):
       tweet.user = request.user      
       tweet.save()
       return redirect('home')
+
 
 
 class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):

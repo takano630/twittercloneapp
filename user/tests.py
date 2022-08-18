@@ -193,7 +193,6 @@ class HomeSuccessTest(TestCase):
     self.home_url = reverse('home')
     self.client.login(username='people', password='testpassword')
 
-
   def test_home_succese(self):
     home_response = self.client.get(self.home_url)
     self.assertEqual(home_response.status_code, 200)
@@ -224,7 +223,7 @@ class TweetSuccessTest(TestCase):
     self.response = self.client.get(self.tweet_url)
     self.assertEqual(self.response.status_code, 200)
 
-  def test_tweet_success(self):
+  def test_success_post(self):
     self.tweet_response = self.client.post(self.tweet_url, self.tweet_data)
     self.assertEqual(self.tweet_response.status_code, 302)
     self.assertRedirects(self.tweet_response, self.home_url)
@@ -235,12 +234,22 @@ class TweetFailTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
     self.tweet_url = reverse('tweet')
+    self.long_text = 'a'
+    for i in range(0, 255):
+      self.long_text = self.long_text + 'a'
 
-  def test_tweet_fail(self):
+  def test_tweet_failure_with_empty(self):
     self.client.login(username='people', password='testpassword')
     tweet_data = {'text':''}
-    tweet_response = self.client.post(self.tweet_url, tweet_data)
-    self.assertRedirects(tweet_response, self.tweet_url)
+    self.tweet_response = self.client.post(self.tweet_url, tweet_data)
+    self.client.post(self.tweet_url, tweet_data)
+    self.assertEqual(self.tweet_response.status_code, 200)
+    self.assertEqual(Tweet.objects.count(), 0)
+
+  def test_tweet_failure_with_long_content(self):
+    self.client.login(username='people', password='testpassword')
+    tweet_data = {'text':self.long_text}
+    self.client.post(self.tweet_url, tweet_data)
     self.assertEqual(Tweet.objects.count(), 0)
 
   def test_tweet_without_login(self):
@@ -258,6 +267,10 @@ class TweetDeleteSuccessTest(TestCase):
     Tweet.objects.create(user=self.user, text='text', pk= self.tweet_pk)
     self.tweet_delete_url = '/'+str(self.tweet_pk)+'/delete'
     self.client.login(username='people', password='testpassword')
+
+  def test_succese_get(self):
+    self.tweet_delete_response = self.client.get(self.tweet_delete_url)
+    self.assertEqual(self.tweet_delete_response.status_code, 200)
   
   def test_tweet_delete(self):
     self.tweet_delete_response = self.client.post(self.tweet_delete_url, {"delete":"delete"})
@@ -293,7 +306,7 @@ class TweetDeleteFailTest(TestCase):
     self.assertRedirects(self.tweet_delete_response, self.home_url)
 
  
-class ProfileTest(TestCase):
+class ProfileSuccessTest(TestCase):
   def setUp(self):
     Account.objects.create_user(username='people', email='test@test.test', password='testpassword',age='1',pk = '1')
     Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1', pk = '2')
@@ -306,6 +319,7 @@ class ProfileTest(TestCase):
     self.client.login(username='people', password='testpassword')
     self.response = self.client.get(self.profile_url)
     self.assertEqual(self.response.status_code, 200)
+    self.assertTemplateUsed('user/profile.html')
 
   def test_different_user_profile(self):
     self.client.login(username='people', password='testpassword')
@@ -339,6 +353,7 @@ class UpdateSucceseTest(TestCase):
     self.client.login(username='people', password='testpassword')
     self.get_response = self.client.get(self.update_url)
     self.assertEqual(self.get_response.status_code, 200)
+    self.assertTemplateUsed('user/update.html')
 
   def test_succese_post(self):
     self.client.login(username='people', password='testpassword')
@@ -346,7 +361,9 @@ class UpdateSucceseTest(TestCase):
     self.update_response = self.client.post(self.update_url, self.update_data)
     self.assertEqual(self.update_response.status_code, 302)
     self.assertEqual(Account.objects.count(), 1)
-
+    self.client.post(self.update_url, self.update_data)
+    self.account_update = Account.objects.get(username = 'people2')
+    self.assertEqual(self.account_pk, self.account_update.pk)
 
 class UpdateFailureTest(TestCase):
   def setUp(self):
