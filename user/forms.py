@@ -25,7 +25,6 @@ class TweetCreateForm(forms.ModelForm):
         
     def clean_text(self):
         text = self.cleaned_data.get('text')
-        print(text)
         if text == '':
             raise forms.ValidationError('入力されていません', code = 'empty')
         elif len(text) > 254:

@@ -36,14 +36,11 @@ class TweetView(LoginRequiredMixin, CreateView):
   form_class = TweetCreateForm
   template_name = "user/tweet.html"
 
-  def post(self, request):
-    self.form = TweetCreateForm(request.POST)
-    if self.form.is_valid():
-      tweet = self.form.save(commit=False)
-      tweet.user = request.user      
-      tweet.save()
-      return redirect('home')
-
+  def form_valid(self, form):
+    tweet = form.save(commit = False)
+    tweet.user = self.request.user      
+    tweet.save()
+    return redirect('home')
 
 
 class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
