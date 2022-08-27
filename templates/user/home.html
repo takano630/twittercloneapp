@@ -1,19 +1,36 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}home{% endblock %}
-
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/home_style.css' %}" type="text/css"/>
+{% endblock %}
+  
+  
 {% block content %}
     <h1>Twitter_clone_app!</h1>
-    {% if user.is_authenticated %}
     <p>{{ user.username }}でログイン中</p>
+    <h2>
+      <a href="{% url 'profile' user.username %}">プロフィール</a>
+    </h2>
     <h2>
       <a href="{% url 'logout' %}">ログアウト</a>
     </h2>
-    {% else %}
-    <p>ログインしていません</p>
-    <p>
-      <a href="{% url 'top' %}">トップへ戻る</a>
-    </p>
-    {% endif %}
+    <h2>
+      <a href="{% url 'tweet' %}">ツイート</a>
+    </h2>
+    {% for tweet in tweet_list %}
+      <div class="tweet">
+        <p>username: {{ tweet.user }}</p>
+        <p>published: {{ tweet.published_at }}</p>
+        <div id="text">
+          <h3>{{ tweet.text }}</h3>
+        </div>
+        <p id="delete">
+          <a href="{% url 'delete' tweet.pk %}">削除</a>
+        </p>
+      
+      </div>
+    {% endfor %}
 {% endblock %}
 
