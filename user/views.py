@@ -86,7 +86,12 @@ class FollowView(LoginRequiredMixin, View):
   def get(self, request, *args, **kwargs):
     follow_user = Account.objects.get(username = self.kwargs['name'])
     user = request.user
-    user.follow.add(follow_user)
+    if follow_user in user.follow.all():
+      user.follow.remove(follow_user)
+    elif follow_user.username == user.username:
+      pass
+    else:
+      user.follow.add(follow_user)
     return redirect('profile', name = follow_user.username)
 
 
@@ -102,4 +107,18 @@ class FollowListView(LoginRequiredMixin, ListView):
   def get_queryset(self, *args, **kwargs):
     user_profile = get_object_or_404(Account, username = self.kwargs['name'])
     return user_profile.follow.all()
+
+
+class FollowerListView(LoginRequiredMixin, ListView):
+  template_name = 'user/followerlist.html'
+
+  def get_context_data(self, *args, **kwargs):
+    context = super().get_context_data(*args, **kwargs)
+    user_profile = get_object_or_404(Account, username = self.kwargs['name'])
+    context['username'] = user_profile.username
+    return context
+
+  def get_queryset(self, *args, **kwargs):
+    user_profile = get_object_or_404(Account, username = self.kwargs['name'])
+    return user_profile.followed.all()
 

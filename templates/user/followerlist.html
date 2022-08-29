@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}followlist{% endblock %}
+{% block title %}followerlist{% endblock %}
 {% block css %}
 {% endblock %}
   
@@ -9,7 +9,7 @@
 {% block content %}
     <h1>Twitter_clone_app!</h1>
     <p>{{ user.username }}でログイン中</p>
-    <h2>{{ username }}がフォローしているユーザー</h2>
+    <h2>{{ username }}をフォローしているユーザー</h2>
     {% for follow in object_list %}
       <p>{{ follow.username }}</p>
     {% endfor %}

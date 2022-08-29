@@ -11,11 +11,15 @@
     <p>ユーザー名 : {{ username }}</p>
     <p>メールアドレス : {{ email }}</p>
     <p>年齢 : {{ age }}</p>
+    <p>{{ follow }}</p>
     <p>
         <a href="{% url 'followlist' username %}">フォローリスト</a>
     </p>
+    <p>
+        <a href="{% url 'followerlist' username %}">フォロワーリスト</a>
+    </p>
     <h2>
-        <a href="{% url 'follow' username %}">フォロー</a>
+        <a href="{% url 'follow' username %}">フォロー（すでにフォローしている場合はフォロー解除）</a>
     </h2>
     <h2>
         <a href="{% url 'update' user.pk %}">プロフィール編集</a>
