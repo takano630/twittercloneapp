@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, DeleteView, CreateView, UpdateView
+from django.views.generic import TemplateView, ListView, DeleteView, CreateView, UpdateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
 
@@ -56,15 +56,16 @@ class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
 
 
 class ProfileView(TemplateView):
+  model = Account
   template_name = 'user/profile.html'
 
   def get_context_data(self, *args, **kwargs):
-     context = super().get_context_data(*args, **kwargs)
-     user_profile = get_object_or_404(Account, username = self.kwargs['name'])
-     context['username'] = user_profile.username
-     context['email'] = user_profile.email
-     context['age'] = user_profile.age
-     return context
+    context = super().get_context_data(*args, **kwargs)
+    user_profile = get_object_or_404(Account, username = self.kwargs['name'])
+    context['username'] = user_profile.username
+    context['email'] = user_profile.email
+    context['age'] = user_profile.age
+    return context
 
 
 class AccountUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
@@ -79,3 +80,26 @@ class AccountUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
 
   def handle_no_permission(self):
     return redirect('profile', name = self.user.username)
+
+
+class FollowView(LoginRequiredMixin, View):
+  def get(self, request, *args, **kwargs):
+    follow_user = Account.objects.get(username = self.kwargs['name'])
+    user = request.user
+    user.follow.add(follow_user)
+    return redirect('profile', name = follow_user.username)
+
+
+class FollowListView(LoginRequiredMixin, ListView):
+  template_name = 'user/followlist.html'
+
+  def get_context_data(self, *args, **kwargs):
+    context = super().get_context_data(*args, **kwargs)
+    user_profile = get_object_or_404(Account, username = self.kwargs['name'])
+    context['username'] = user_profile.username
+    return context
+
+  def get_queryset(self, *args, **kwargs):
+    user_profile = get_object_or_404(Account, username = self.kwargs['name'])
+    return user_profile.follow.all()
+
