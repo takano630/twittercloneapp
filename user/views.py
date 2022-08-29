@@ -65,6 +65,8 @@ class ProfileView(TemplateView):
     context['username'] = user_profile.username
     context['email'] = user_profile.email
     context['age'] = user_profile.age
+    context['follow'] = user_profile.follow.all().count()
+    context['follower'] = user_profile.followed.all().count()
     return context
 
 
