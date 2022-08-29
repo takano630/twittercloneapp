@@ -86,7 +86,7 @@ class AccountUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
 
 class FollowView(LoginRequiredMixin, View):
   def get(self, request, *args, **kwargs):
-    follow_user = Account.objects.get(username = self.kwargs['name'])
+    follow_user = get_object_or_404(Account, username = self.kwargs['name'])
     user = request.user
     if follow_user in user.follow.all():
       user.follow.remove(follow_user)

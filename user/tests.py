@@ -314,6 +314,8 @@ class ProfileSuccessTest(TestCase):
     self.response = self.client.get(self.profile_url)
     self.assertEqual(self.response.status_code, 200)
     self.assertTemplateUsed('user/profile.html')
+    self.assertEqual(self.people.follow.all().count(), 0)
+    self.assertEqual(self.people.followed.all().count(), 0)
 
   def test_different_user_profile(self):
     self.client.login(username='people', password='testpassword')
@@ -356,6 +358,7 @@ class UpdateProfileSucceseTest(TestCase):
     self.client.post(self.update_url, self.update_data)
     self.account_update = Account.objects.get(username = 'people2')
     self.assertEqual(self.people.pk, self.account_update.pk)
+
 
 class UpdateProfileFailureTest(TestCase):
   def setUp(self):
@@ -422,3 +425,95 @@ class UpdateProfileFailureTest(TestCase):
     self.client.post(self.update_url, self.update_data)
     self.update_people = Account.objects.get(pk = self.people.pk)
     self.assertEqual(self.update_people.username, 'people')
+
+
+class FollowSucceseTest(TestCase):
+  def setUp(self):
+    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
+    self.follow_people = Account.objects.create_user(username='followpeople', email='test@test.test', password='testtestpassword', age='1', pk = '1')
+    self.client.login(username='people', password='testpassword')
+    self.follow_url = '/follow/' + self.follow_people.username
+
+  def test_succese_post(self):
+    self.follow_response = self.client.get(self.follow_url)
+    self.assertEqual(self.follow_response.status_code, 302)
+    self.assertTemplateUsed('user/profile.html')
+    self.assertEqual(self.people.follow.all().count(), 1)
+
+
+class FollowFailureTest(TestCase):
+  def setUp(self):
+    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
+    self.follow_people = Account.objects.create_user(username='follow_people', email='test@test.test', password='testpassword', age='1', pk = '1')
+    self.client.login(username='people', password='testpassword')
+    self.profile_url = '/profile/' + self.follow_people.username
+    self.follow_url = '/follow/' + self.follow_people.username
+
+  def test_failure_get_with_not_exist_user(self):
+    self.follow_not_exist_url = '/follow/not_exist'
+    self.follow_not_exist_response = self.client.get(self.follow_not_exist_url)
+    self.assertEqual(self.follow_not_exist_response.status_code, 404)
+    self.assertEqual(self.people.follow.all().count(), 0)
+
+  def test_failure_post_with_self(self):
+    self.follow_self_url = '/follow/' + self.people.username
+    self.follow_self_response = self.client.get(self.follow_self_url)
+    self.assertEqual(self.follow_self_response.status_code, 302)
+    self.assertEqual(self.people.follow.all().count(), 0)
+ 
+
+class UnFollowSucceseTest(TestCase):
+  def setUp(self):
+    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
+    self.follow_people = Account.objects.create_user(username='followpeople', email='test@test.test', password='testtestpassword', age='1', pk = '1')
+    self.follow_url = '/follow/' + self.follow_people.username
+    self.client.login(username='people', password='testpassword')
+    self.client.get(self.follow_url)
+  
+  def test_succese_get(self):
+    self.unfollow_response = self.client.get(self.follow_url)
+    self.assertEqual(self.unfollow_response.status_code, 302)
+    self.assertEqual(self.people.follow.all().count(), 0)
+
+
+class UnFollowFailureTest(TestCase):
+  def setUp(self):
+    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
+    self.follow_people = Account.objects.create_user(username='followpeople', email='test@test.test', password='testtestpassword', age='1', pk = '1')
+    self.follow_url = '/follow/' + self.follow_people.username
+    self.client.login(username='people', password='testpassword')
+    self.client.get(self.follow_url)
+
+  def test_failure_get_with_not_exist_user(self):
+    self.unfollow_not_exist_url = '/follow/not_exist'
+    self.unfollow_not_exist_response = self.client.get(self.unfollow_not_exist_url)
+    self.assertEqual(self.unfollow_not_exist_response.status_code, 404)
+    self.assertEqual(self.people.follow.all().count(), 0)
+
+  def test_failure_post_with_self(self):
+    self.unfollow_self_url = '/follow/' + self.people.username
+    self.unfollow_self_response = self.client.get(self.unfollow_self_url)
+    self.assertEqual(self.unfollow_self_response.status_code, 302)
+    self.assertEqual(self.people.follow.all().count(), 0)
+
+
+class FollowListTest(TestCase):
+  def setUp(self):
+    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
+    self.client.login(username='people', password='testpassword')
+    self.followlist_url = '/followlist/' + self.people.username
+
+  def test_succese_get(self):
+    self.followlist_response = self.client.get(self.followlist_url)
+    self.assertEqual(self.followlist_response.status_code, 200)
+
+
+class FollowerListTest(TestCase):
+  def setUp(self):
+    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
+    self.client.login(username='people', password='testpassword')
+    self.followerlist_url = '/followerlist/' + self.people.username
+
+  def test_succese_get(self):
+    self.followerlist_response = self.client.get(self.followerlist_url)
+    self.assertEqual(self.followerlist_response.status_code, 200)
