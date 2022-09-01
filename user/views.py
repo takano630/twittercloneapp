@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
 
 from .forms import AccountCreateForm, ProfileForm, TweetCreateForm
-from .models import Tweet, Account
+from .models import Tweet, Account, Follow
 
 class TopView(TemplateView):
   template_name = 'top.html'
@@ -62,10 +62,11 @@ class ProfileView(TemplateView):
   def get_context_data(self, *args, **kwargs):
     context = super().get_context_data(*args, **kwargs)
     user_profile = get_object_or_404(Account, username = self.kwargs['name'])
+    my_follow = Follow.objects.get_or_create(user = user_profile)
     context['username'] = user_profile.username
     context['email'] = user_profile.email
     context['age'] = user_profile.age
-    context['follow'] = user_profile.follow.all().count()
+    context['following'] = my_follow[0].follow.all().count()
     context['follower'] = user_profile.followed.all().count()
     return context
 
@@ -88,12 +89,25 @@ class FollowView(LoginRequiredMixin, View):
   def get(self, request, *args, **kwargs):
     follow_user = get_object_or_404(Account, username = self.kwargs['name'])
     user = request.user
-    if follow_user in user.follow.all():
-      user.follow.remove(follow_user)
-    elif follow_user.username == user.username:
+    my_follow = Follow.objects.get_or_create(user = user)
+    
+    if follow_user.username == user.username:
       pass
     else:
-      user.follow.add(follow_user)
+      my_follow[0].follow.add(follow_user)
+    return redirect('profile', name = follow_user.username)
+
+
+class UnFollowView(LoginRequiredMixin, View):
+  def get(self, request, *args, **kwargs):
+    follow_user = get_object_or_404(Account, username = self.kwargs['name'])
+    user = request.user
+    my_follow = Follow.objects.get_or_create(user = user)
+    
+    if follow_user.username == user.username:
+      pass
+    else:
+      my_follow[0].follow.remove(follow_user)
     return redirect('profile', name = follow_user.username)
 
 
@@ -107,8 +121,9 @@ class FollowListView(LoginRequiredMixin, ListView):
     return context
 
   def get_queryset(self, *args, **kwargs):
-    user_profile = get_object_or_404(Account, username = self.kwargs['name'])
-    return user_profile.follow.all()
+    user = get_object_or_404(Account, username = self.kwargs['name'])
+    my_follow = Follow.objects.get_or_create(user = user)
+    return my_follow[0].follow.all()
 
 
 class FollowerListView(LoginRequiredMixin, ListView):
@@ -121,6 +136,7 @@ class FollowerListView(LoginRequiredMixin, ListView):
     return context
 
   def get_queryset(self, *args, **kwargs):
-    user_profile = get_object_or_404(Account, username = self.kwargs['name'])
-    return user_profile.followed.all()
+    user = get_object_or_404(Account, username = self.kwargs['name'])
+    my_follow = Follow.objects.get_or_create(user = user)
+    return user.followed.all()
 

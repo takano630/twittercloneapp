@@ -11,7 +11,7 @@
     <p>ユーザー名 : {{ username }}</p>
     <p>メールアドレス : {{ email }}</p>
     <p>年齢 : {{ age }}</p>
-    <p>フォロー数 : {{ follow }}</p>
+    <p>フォロー数 : {{ following }}</p>
     <p>フォロワー数 : {{ follower }}</p>
     <p>
         <a href="{% url 'followlist' username %}">フォローリスト</a>
@@ -20,7 +20,10 @@
         <a href="{% url 'followerlist' username %}">フォロワーリスト</a>
     </p>
     <h2>
-        <a href="{% url 'follow' username %}">フォロー（すでにフォローしている場合はフォロー解除）</a>
+        <a href="{% url 'follow' username %}">フォロー</a>
+    </h2>
+    <h2>
+        <a href="{% url 'unfollow' username %}">フォロー解除</a>
     </h2>
     <h2>
         <a href="{% url 'update' user.pk %}">プロフィール編集</a>
