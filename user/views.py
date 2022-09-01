@@ -123,7 +123,7 @@ class FollowListView(LoginRequiredMixin, ListView):
   def get_queryset(self, *args, **kwargs):
     user = get_object_or_404(Account, username = self.kwargs['name'])
     my_follow = Follow.objects.get_or_create(user = user)
-    return my_follow[0].follow.all()
+    return my_follow[0].follow.prefetch_related("user").all()
 
 
 class FollowerListView(LoginRequiredMixin, ListView):
@@ -138,5 +138,5 @@ class FollowerListView(LoginRequiredMixin, ListView):
   def get_queryset(self, *args, **kwargs):
     user = get_object_or_404(Account, username = self.kwargs['name'])
     my_follow = Follow.objects.get_or_create(user = user)
-    return user.followed.all()
+    return user.followed.prefetch_related("user").all()
 

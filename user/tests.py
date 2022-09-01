@@ -462,7 +462,7 @@ class FollowFailureTest(TestCase):
     self.assertEqual(self.people.follow.all().count(), 0)
  
 
-class UnFollowSucceseTest(TestCase):
+class UnFollowSuccessTest(TestCase):
   def setUp(self):
     self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
     self.follow_people = Account.objects.create_user(username='followpeople', email='test@test.test', password='testtestpassword', age='1', pk = '1')
