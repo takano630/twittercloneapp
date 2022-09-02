@@ -7,9 +7,9 @@ class Account(AbstractUser):
   age = models.PositiveSmallIntegerField(null=False, blank=False, default='0')
   
 
-class Follow(models.Model):
-   user = models.OneToOneField('Account', on_delete=models.CASCADE)
-   follow = models.ManyToManyField('Account', related_name = 'followed', symmetrical = False, blank = True)
+class FollowRelationship(models.Model):
+   follower = models.ForeignKey('Account', on_delete=models.CASCADE)
+   followee = models.ManyToManyField('Account', related_name = 'followed', symmetrical = False, blank = True)
 
 
 class Tweet(models.Model):
