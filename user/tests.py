@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Account, Tweet
+from .models import Account, Tweet, FollowRelationship
 from twittercloneapp.settings import LOGIN_REDIRECT_URL
 
 class TopViewTests(TestCase):
@@ -306,6 +306,7 @@ class ProfileSuccessTest(TestCase):
     Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1', pk = '2')
     self.people = Account.objects.get(pk = 1)
     self.different_people = Account.objects.get(pk = 2)
+    self.people_follower_queryset, self.created = FollowRelationship.objects.get_or_create(follower = self.people)
     self.profile_url = '/profile/'+self.people.username
     self.profile_different_url = '/profile/'+self.different_people.username
 
@@ -314,7 +315,8 @@ class ProfileSuccessTest(TestCase):
     self.response = self.client.get(self.profile_url)
     self.assertEqual(self.response.status_code, 200)
     self.assertTemplateUsed('user/profile.html')
-    self.assertEqual(self.people.follow.all().count(), 0)
+    self.assertTrue(self.created)
+    self.assertEqual(self.people_follower_queryset.followee.all().count(), 0)
     self.assertEqual(self.people.followed.all().count(), 0)
 
   def test_different_user_profile(self):
@@ -432,13 +434,14 @@ class FollowSucceseTest(TestCase):
     self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
     self.follow_people = Account.objects.create_user(username='followpeople', email='test@test.test', password='testtestpassword', age='1', pk = '1')
     self.client.login(username='people', password='testpassword')
-    self.follow_url = '/follow/' + self.follow_people.username
+    self.people_follower_queryset, self.created = FollowRelationship.objects.get_or_create(follower = self.people)
+    self.profile_url = '/profile/' + self.follow_people.username
 
   def test_succese_post(self):
-    self.follow_response = self.client.get(self.follow_url)
+    self.follow_response = self.client.post(self.profile_url, {"follow_or_unfollow": "follow_or_unfollow"})
     self.assertEqual(self.follow_response.status_code, 302)
     self.assertTemplateUsed('user/profile.html')
-    self.assertEqual(self.people.follow.all().count(), 1)
+    self.assertEqual(self.people_follower_queryset.followee.all().count(), 1)
 
 
 class FollowFailureTest(TestCase):
@@ -453,7 +456,7 @@ class FollowFailureTest(TestCase):
     self.follow_not_exist_url = '/follow/not_exist'
     self.follow_not_exist_response = self.client.get(self.follow_not_exist_url)
     self.assertEqual(self.follow_not_exist_response.status_code, 404)
-    self.assertEqual(self.people.follow.all().count(), 0)
+    self.assertEqual(self.people.follower.all().count(), 0)
 
   def test_failure_post_with_self(self):
     self.follow_self_url = '/follow/' + self.people.username

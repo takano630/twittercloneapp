@@ -21,7 +21,7 @@
     </p>
     <form action="" method="post">
         {% csrf_token %}
-        <input type="submit" value="フォロー（フォロー解除）">
+        <input type="submit" name="follow_or_unfollow" value="follow_or_unfollow">
     </form>
     <h2>
         <a href="{% url 'update' user.pk %}">プロフィール編集</a>
