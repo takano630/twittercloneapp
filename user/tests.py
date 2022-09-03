@@ -438,7 +438,7 @@ class FollowSucceseTest(TestCase):
     self.profile_url = '/profile/' + self.follow_people.username
 
   def test_succese_post(self):
-    self.follow_response = self.client.post(self.profile_url, {"follow_or_unfollow": "follow_or_unfollow"})
+    self.follow_response = self.client.post(self.profile_url, {'name' : self.follow_people.username})
     self.assertEqual(self.follow_response.status_code, 302)
     self.assertTemplateUsed('user/profile.html')
     self.assertEqual(self.people_follower_queryset.followee.all().count(), 1)
@@ -520,3 +520,4 @@ class FollowerListTest(TestCase):
   def test_succese_get(self):
     self.followerlist_response = self.client.get(self.followerlist_url)
     self.assertEqual(self.followerlist_response.status_code, 200)
+

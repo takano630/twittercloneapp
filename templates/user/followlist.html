@@ -11,6 +11,6 @@
     <p>{{ user.username }}でログイン中</p>
     <h2>{{ username }}がフォローしているユーザー</h2>
     {% for following_user in follower_list %}
-      <p>{{ following_user.username }}</p>
+      <p>{{ following_user.followee.username }}</p>
     {% endfor %}
 {% endblock %}

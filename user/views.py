@@ -62,18 +62,18 @@ class ProfileView(TemplateView):
   def get_context_data(self, *args, **kwargs):
     context = super().get_context_data(*args, **kwargs)
     user_profile = get_object_or_404(Account, username = self.kwargs['name'])
-    user_follow, created = FollowRelationship.objects.get_or_create(follower = user_profile)
+    user_follow = FollowRelationship.objects.filter(follower = user_profile)
     context['username'] = user_profile.username
     context['email'] = user_profile.email
     context['age'] = user_profile.age
-    context['following_number'] = user_follow.followee.all().count()
+    context['following_number'] = user_follow.count()
     context['followee_number'] = user_profile.followed.all().count()
     return context
 
   def post(self, *args, **kwargs):
-    my_follow, created = FollowRelationship.objects.get_or_create(follower = self.request.user)
     user_profile = get_object_or_404(Account, username = self.kwargs['name'])
-    if user_profile in my_follow.followee.all():
+    my_follow = FollowRelationship.objects.filter(follower = self.request.user, followee = user_profile)
+    if my_follow.exists():
       return redirect('unfollow', name = user_profile.username)
     else:
       return redirect('follow', name = user_profile.username)
@@ -101,22 +101,20 @@ class FollowView(LoginRequiredMixin, View):
     if follow_user.username == user.username:
       pass
     else:
-      my_follow, created = FollowRelationship.objects.get_or_create(follower = user)
-      my_follow.followee.add(follow_user)
+      FollowRelationship.objects.get_or_create(follower = user, followee = follow_user)
     return redirect('profile', name = follow_user.username)
 
 
 class UnFollowView(LoginRequiredMixin, View):
   def get(self, request, *args, **kwargs):
-    follow_user = get_object_or_404(Account, username = self.kwargs['name'])
+    unfollow_user = get_object_or_404(Account, username = self.kwargs['name'])
     user = request.user
     
-    if follow_user.username == user.username:
+    if unfollow_user.username == user.username:
       pass
     else:
-      my_follow, created = FollowRelationship.objects.get_or_create(follower = user)
-      my_follow.followee.remove(follow_user)
-    return redirect('profile', name = follow_user.username)
+      FollowRelationship.objects.get(follower = user, followee = unfollow_user).delete()
+    return redirect('profile', name = unfollow_user.username)
 
 
 class FollowListView(LoginRequiredMixin, ListView):
@@ -131,9 +129,10 @@ class FollowListView(LoginRequiredMixin, ListView):
 
   def get_queryset(self, *args, **kwargs):
     user = get_object_or_404(Account, username = self.kwargs['name'])
-    my_follow, created = FollowRelationship.objects.select_related("follower").get_or_create(follower = user)
-    return my_follow.followee.all()
+    my_follow = FollowRelationship.objects.filter(follower = user)
+    return my_follow
 
+  
 class FollowerListView(LoginRequiredMixin, ListView):
   template_name = 'user/followerlist.html'
   context_object_name = 'followee_list'

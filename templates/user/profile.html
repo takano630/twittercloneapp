@@ -19,7 +19,7 @@
     <p>
         <a href="{% url 'followerlist' username %}">フォロワーリスト</a>
     </p>
-    <form action="" method="post">
+    <form action="{% url 'profile' username %}" method="post">
         {% csrf_token %}
         <input type="submit" name="follow_or_unfollow" value="follow_or_unfollow">
     </form>

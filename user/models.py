@@ -9,7 +9,7 @@ class Account(AbstractUser):
 
 class FollowRelationship(models.Model):
    follower = models.ForeignKey('Account', on_delete=models.CASCADE)
-   followee = models.ManyToManyField('Account', related_name = 'followed', symmetrical = False, blank = True)
+   followee = models.ForeignKey('Account', related_name = 'followed', on_delete=models.CASCADE)
 
 
 class Tweet(models.Model):
