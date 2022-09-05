@@ -97,9 +97,12 @@ class FollowView(LoginRequiredMixin, View):
   def get(self, request, *args, **kwargs):
     follow_user = get_object_or_404(Account, username = self.kwargs['name'])
     user = request.user
+    my_follow = FollowRelationship.objects.filter(follower = user, followee = follow_user)
     
     if follow_user.username == user.username:
       pass
+    elif my_follow.exists():
+      return redirect('unfollow', name = follow_user.username)
     else:
       FollowRelationship.objects.get_or_create(follower = user, followee = follow_user)
     return redirect('profile', name = follow_user.username)
