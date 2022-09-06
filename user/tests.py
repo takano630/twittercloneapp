@@ -437,7 +437,7 @@ class FollowSucceseTest(TestCase):
     self.follow_url = reverse('follow', kwargs = {'name' : self.follow_people.username})
 
   def test_succese_post(self):
-    self.follow_response = self.client.get(self.follow_url)
+    self.follow_response = self.client.post(self.follow_url)
     self.assertEqual(self.follow_response.status_code, 302)
     self.assertTemplateUsed('user/profile.html')
     self.assertEqual(self.people_follower_queryset.count(), 1)
@@ -455,13 +455,13 @@ class FollowFailureTest(TestCase):
 
   def test_failure_get_with_not_exist_user(self):
     self.follow_not_exist_url = reverse('follow', kwargs = {'name' : 'not_exist'})
-    self.follow_not_exist_response = self.client.get(self.follow_not_exist_url)
+    self.follow_not_exist_response = self.client.post(self.follow_not_exist_url)
     self.assertEqual(self.follow_not_exist_response.status_code, 404)
     self.assertEqual(self.people_follower_queryset.count(), 0)
 
   def test_failure_post_with_self(self):
     self.follow_self_url = reverse('follow', kwargs = {'name' : self.people.username})
-    self.follow_self_response = self.client.get(self.follow_self_url)
+    self.follow_self_response = self.client.post(self.follow_self_url)
     self.assertEqual(self.follow_self_response.status_code, 302)
     self.assertEqual(self.people_follower_queryset.count(), 0)
  
@@ -479,8 +479,7 @@ class UnFollowSuccessTest(TestCase):
   
   def test_succese_get(self):
     self.assertEqual(self.people_follower_queryset.count(), 1)
-    self.unfollow_response = self.client.get(self.follow_url)
-    self.assertRedirects(self.unfollow_response, self.unfollow_url, target_status_code=302)
+    self.unfollow_response = self.client.post(self.unfollow_url)
     self.assertEqual(self.unfollow_response.status_code, 302)
     self.assertEqual(self.people_follower_queryset.count(), 0)
 
@@ -496,15 +495,15 @@ class UnFollowFailureTest(TestCase):
 
   def test_failure_get_with_not_exist_user(self):
     self.assertEqual(self.people_follower_queryset.count(), 1)
-    self.unfollow_not_exist_url = reverse('follow', kwargs = {'name' : 'not_exist'})
-    self.unfollow_not_exist_response = self.client.get(self.unfollow_not_exist_url)
+    self.unfollow_not_exist_url = reverse('unfollow', kwargs = {'name' : 'not_exist'})
+    self.unfollow_not_exist_response = self.client.post(self.unfollow_not_exist_url)
     self.assertEqual(self.unfollow_not_exist_response.status_code, 404)
     self.assertEqual(self.people_follower_queryset.count(), 1)
 
   def test_failure_post_with_self(self):
     self.assertEqual(self.people_follower_queryset.count(), 1)
-    self.unfollow_self_url = reverse('follow', kwargs = {'name' : self.people.username})
-    self.unfollow_self_response = self.client.get(self.unfollow_self_url)
+    self.unfollow_self_url = reverse('unfollow', kwargs = {'name' : self.people.username})
+    self.unfollow_self_response = self.client.post(self.unfollow_self_url)
     self.assertEqual(self.unfollow_self_response.status_code, 302)
     self.assertEqual(self.people_follower_queryset.count(), 1)
 
