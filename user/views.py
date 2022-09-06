@@ -68,15 +68,8 @@ class ProfileView(TemplateView):
     context['age'] = user_profile.age
     context['following_number'] = user_follow.count()
     context['followee_number'] = user_profile.followed.all().count()
+    context['follow_check'] = FollowRelationship.objects.filter(follower = self.request.user, followee = user_profile).exists()
     return context
-
-  def post(self, *args, **kwargs):
-    user_profile = get_object_or_404(Account, username = self.kwargs['name'])
-    my_follow = FollowRelationship.objects.filter(follower = self.request.user, followee = user_profile)
-    if my_follow.exists():
-      return redirect('unfollow', name = user_profile.username)
-    else:
-      return redirect('follow', name = user_profile.username)
 
 
 class AccountUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
@@ -94,7 +87,7 @@ class AccountUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
 
 
 class FollowView(LoginRequiredMixin, View):
-  def get(self, request, *args, **kwargs):
+  def post(self, request, *args, **kwargs):
     follow_user = get_object_or_404(Account, username = self.kwargs['name'])
     user = request.user
     my_follow = FollowRelationship.objects.filter(follower = user, followee = follow_user)
@@ -109,14 +102,17 @@ class FollowView(LoginRequiredMixin, View):
 
 
 class UnFollowView(LoginRequiredMixin, View):
-  def get(self, request, *args, **kwargs):
+  def post(self, request, *args, **kwargs):
     unfollow_user = get_object_or_404(Account, username = self.kwargs['name'])
     user = request.user
+    my_follow = FollowRelationship.objects.filter(follower = user, followee = unfollow_user)
     
     if unfollow_user.username == user.username:
       pass
-    else:
+    elif my_follow.exists():
       FollowRelationship.objects.get(follower = user, followee = unfollow_user).delete()
+    else:
+      return redirect('follow', name = unfollow_user.username)
     return redirect('profile', name = unfollow_user.username)
 
 

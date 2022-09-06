@@ -430,8 +430,8 @@ class UpdateProfileFailureTest(TestCase):
 
 class FollowSucceseTest(TestCase):
   def setUp(self):
-    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
-    self.follow_people = Account.objects.create_user(username='followpeople', email='test@test.test', password='testtestpassword', age='1', pk = '2')
+    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.follow_people = Account.objects.create_user(username='followpeople', email='test@test.test', password='testtestpassword', age='1')
     self.client.login(username='people', password='testpassword')
     self.people_follower_queryset = FollowRelationship.objects.filter(follower = self.people)
     self.follow_url = reverse('follow', kwargs = {'name' : self.follow_people.username})
@@ -445,8 +445,8 @@ class FollowSucceseTest(TestCase):
 
 class FollowFailureTest(TestCase):
   def setUp(self):
-    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1', pk = '1')
-    self.follow_people = Account.objects.create_user(username='follow_people', email='test@test.test', password='testpassword', age='1', pk = '2')
+    self.people = Account.objects.create_user(username='people', email='test@test.test', password='testpassword', age='1')
+    self.follow_people = Account.objects.create_user(username='follow_people', email='test@test.test', password='testpassword', age='1')
     self.client.login(username='people', password='testpassword')
     self.people_follower_queryset = FollowRelationship.objects.filter(follower = self.people)
     self.profile_url = reverse('profile', kwargs = {'name' : self.follow_people.username})

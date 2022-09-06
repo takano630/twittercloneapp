@@ -19,10 +19,18 @@
     <p>
         <a href="{% url 'followerlist' username %}">フォロワーリスト</a>
     </p>
-    <form action="{% url 'profile' username %}" method="post">
-        {% csrf_token %}
-        <input type="submit" name="follow_or_unfollow" value="follow_or_unfollow">
-    </form>
+    {% if user.username == username %}
+    {% elif follow_check %}
+        <form action="{% url 'unfollow' username %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="unfollow" value="unfollow">
+        </form>
+    {% else %}
+        <form action="{% url 'follow' username %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="follow" value="follow">
+        </form>
+    {% endif %}
     <h2>
         <a href="{% url 'update' user.pk %}">プロフィール編集</a>
     </h2>
