@@ -11,6 +11,14 @@ class FollowRelationship(models.Model):
    follower = models.ForeignKey('Account', on_delete=models.CASCADE)
    followee = models.ForeignKey('Account', related_name = 'followed', on_delete=models.CASCADE)
 
+   class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["follower", "followee"],
+                name="follow_unique"
+            ),
+        ]
+
 
 class Tweet(models.Model):
   user = models.ForeignKey('Account', on_delete=models.CASCADE)

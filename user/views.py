@@ -94,10 +94,8 @@ class FollowView(LoginRequiredMixin, View):
     
     if follow_user.username == user.username:
       pass
-    elif my_follow.exists():
-      return redirect('unfollow', name = follow_user.username)
     else:
-      FollowRelationship.objects.get_or_create(follower = user, followee = follow_user)
+      FollowRelationship.objects.create(follower = user, followee = follow_user)
     return redirect('profile', name = follow_user.username)
 
 
@@ -109,16 +107,14 @@ class UnFollowView(LoginRequiredMixin, View):
     
     if unfollow_user.username == user.username:
       pass
-    elif my_follow.exists():
-      FollowRelationship.objects.get(follower = user, followee = unfollow_user).delete()
     else:
-      return redirect('follow', name = unfollow_user.username)
+      FollowRelationship.objects.get(follower = user, followee = unfollow_user).delete()
     return redirect('profile', name = unfollow_user.username)
 
 
 class FollowListView(LoginRequiredMixin, ListView):
   template_name = 'user/followlist.html'
-  context_object_name = 'follower_list'
+  context_object_name = 'follow_reloationships'
 
   def get_context_data(self, *args, **kwargs):
     context = super().get_context_data(*args, **kwargs)
@@ -144,5 +140,5 @@ class FollowerListView(LoginRequiredMixin, ListView):
 
   def get_queryset(self, *args, **kwargs):
     user = get_object_or_404(Account, username = self.kwargs['name'])
-    return user.followed.prefetch_related("follower").all()
+    return user.followed.select_related("follower").all()
 
