@@ -68,7 +68,7 @@ class ProfileView(TemplateView):
     context['age'] = user_profile.age
     context['following_number'] = user_follow.count()
     context['followee_number'] = user_profile.followed.all().count()
-    context['follow_check'] = FollowRelationship.objects.filter(follower = self.request.user, followee = user_profile).exists()
+    context['is_follow'] = FollowRelationship.objects.filter(follower = self.request.user, followee = user_profile).exists()
     return context
 
 
@@ -108,7 +108,7 @@ class UnFollowView(LoginRequiredMixin, View):
     if unfollow_user.username == user.username:
       pass
     else:
-      FollowRelationship.objects.get(follower = user, followee = unfollow_user).delete()
+      my_follow.delete()
     return redirect('profile', name = unfollow_user.username)
 
 

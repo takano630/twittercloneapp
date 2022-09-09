@@ -20,7 +20,7 @@
         <a href="{% url 'followerlist' username %}">フォロワーリスト</a>
     </p>
     {% if user.username == username %}
-    {% elif follow_check %}
+    {% elif is_follow %}
         <form action="{% url 'unfollow' username %}" method="post">
             {% csrf_token %}
             <input type="submit" name="unfollow" value="unfollow">
