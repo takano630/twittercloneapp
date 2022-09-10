@@ -306,7 +306,6 @@ class ProfileSuccessTest(TestCase):
     Account.objects.create_user(username='differentpeople', email='test@test.test', password='testpassword',age='1', pk = '2')
     self.people = Account.objects.get(pk = 1)
     self.different_people = Account.objects.get(pk = 2)
-    self.people_follower_queryset = FollowRelationship.objects.filter(follower = self.people)
     self.profile_url = '/profile/'+self.people.username
     self.profile_different_url = '/profile/'+self.different_people.username
 
@@ -315,8 +314,8 @@ class ProfileSuccessTest(TestCase):
     self.response = self.client.get(self.profile_url)
     self.assertEqual(self.response.status_code, 200)
     self.assertTemplateUsed('user/profile.html')
-    self.assertEqual(self.people_follower_queryset.count(), 0)
-    self.assertEqual(self.people.followed.all().count(), 0)
+    self.assertEqual(FollowRelationship.objects.filter(follower = self.people).count(), self.response.context['following_number'])
+    self.assertEqual(self.people.followed.all().count(), self.response.context['followee_number'])
 
   def test_different_user_profile(self):
     self.client.login(username='people', password='testpassword')
@@ -428,7 +427,7 @@ class UpdateProfileFailureTest(TestCase):
     self.assertEqual(self.update_people.username, 'people')
 
 
-class FollowSucceseTest(TestCase):
+class FollowSuccessTest(TestCase):
   def setUp(self):
     self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
     self.follow_person = Account.objects.create_user(username='follow_person', email='test@test.test', password='testtestpassword', age='1')
@@ -462,7 +461,7 @@ class FollowFailureTest(TestCase):
   def test_failure_post_with_self(self):
     self.follow_self_url = reverse('follow', kwargs = {'name' : self.person.username})
     self.follow_self_response = self.client.post(self.follow_self_url)
-    self.assertEqual(self.follow_self_response.status_code, 302)
+    self.assertEqual(self.follow_self_response.status_code, 404)
     self.assertEqual(self.person_follower_queryset.count(), 0)
  
 
@@ -504,7 +503,7 @@ class UnFollowFailureTest(TestCase):
     self.assertEqual(self.person_follower_queryset.count(), 1)
     self.unfollow_self_url = reverse('unfollow', kwargs = {'name' : self.person.username})
     self.unfollow_self_response = self.client.post(self.unfollow_self_url)
-    self.assertEqual(self.unfollow_self_response.status_code, 302)
+    self.assertEqual(self.unfollow_self_response.status_code, 404)
     self.assertEqual(self.person_follower_queryset.count(), 1)
 
 
