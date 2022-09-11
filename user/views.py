@@ -3,7 +3,7 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic import TemplateView, ListView, DeleteView, CreateView, UpdateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
-from django.http import Http404
+from django.core.exceptions import BadRequest
 
 from .forms import AccountCreateForm, ProfileForm, TweetCreateForm
 from .models import Tweet, Account, FollowRelationship
@@ -93,7 +93,7 @@ class FollowView(LoginRequiredMixin, View):
     user = request.user
     
     if follow_user.username == user.username:
-      raise Http404("自分のアカウントをフォローすることはできません")
+      raise BadRequest
     else:
       FollowRelationship.objects.create(follower = user, followee = follow_user)
     return redirect('profile', name = follow_user.username)
@@ -103,12 +103,11 @@ class UnFollowView(LoginRequiredMixin, View):
   def post(self, request, *args, **kwargs):
     unfollow_user = get_object_or_404(Account, username = self.kwargs['name'])
     user = request.user
-    my_follow = FollowRelationship.objects.filter(follower = user, followee = unfollow_user)
     
     if unfollow_user.username == user.username:
-      raise Http404("自分のアカウントをフォローすることはできません")
+      raise BadRequest
     else:
-      my_follow.delete()
+      FollowRelationship.objects.filter(follower = user, followee = unfollow_user).delete()
     return redirect('profile', name = unfollow_user.username)
 
 

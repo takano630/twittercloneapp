@@ -461,7 +461,7 @@ class FollowFailureTest(TestCase):
   def test_failure_post_with_self(self):
     self.follow_self_url = reverse('follow', kwargs = {'name' : self.person.username})
     self.follow_self_response = self.client.post(self.follow_self_url)
-    self.assertEqual(self.follow_self_response.status_code, 404)
+    self.assertEqual(self.follow_self_response.status_code, 400)
     self.assertEqual(self.person_follower_queryset.count(), 0)
  
 
@@ -503,7 +503,7 @@ class UnFollowFailureTest(TestCase):
     self.assertEqual(self.person_follower_queryset.count(), 1)
     self.unfollow_self_url = reverse('unfollow', kwargs = {'name' : self.person.username})
     self.unfollow_self_response = self.client.post(self.unfollow_self_url)
-    self.assertEqual(self.unfollow_self_response.status_code, 404)
+    self.assertEqual(self.unfollow_self_response.status_code, 400)
     self.assertEqual(self.person_follower_queryset.count(), 1)
 
 
