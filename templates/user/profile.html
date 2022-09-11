@@ -11,6 +11,26 @@
     <p>ユーザー名 : {{ username }}</p>
     <p>メールアドレス : {{ email }}</p>
     <p>年齢 : {{ age }}</p>
+    <p>フォロー数 : {{ following_number }}</p>
+    <p>フォロワー数 : {{ followee_number }}</p>
+    <p>
+        <a href="{% url 'followlist' username %}">フォローリスト</a>
+    </p>
+    <p>
+        <a href="{% url 'followerlist' username %}">フォロワーリスト</a>
+    </p>
+    {% if user.username == username %}
+    {% elif is_follow %}
+        <form action="{% url 'unfollow' username %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="unfollow" value="unfollow">
+        </form>
+    {% else %}
+        <form action="{% url 'follow' username %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="follow" value="follow">
+        </form>
+    {% endif %}
     <h2>
         <a href="{% url 'update' user.pk %}">プロフィール編集</a>
     </h2>
