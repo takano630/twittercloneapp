@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Account, Tweet, FollowRelationship
+from .models import Account, Tweet, FollowRelationship, LikeRelationship
 from twittercloneapp.settings import LOGIN_REDIRECT_URL
 
 class TopViewTests(TestCase):
@@ -513,7 +513,7 @@ class FollowListTest(TestCase):
     self.client.login(username='person', password='testpassword')
     self.followlist_url = reverse('followlist', kwargs = {'name' : self.person.username})
 
-  def test_succese_get(self):
+  def test_success_get(self):
     self.followlist_response = self.client.get(self.followlist_url)
     self.assertEqual(self.followlist_response.status_code, 200)
 
@@ -528,3 +528,96 @@ class FollowerListTest(TestCase):
     self.followerlist_response = self.client.get(self.followerlist_url)
     self.assertEqual(self.followerlist_response.status_code, 200)
 
+
+class LikeSuccessTest(TestCase):
+  def setUp(self):
+    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.person, text='text')
+    self.client.login(username='person', password='testpassword')
+    self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
+    self.like_queryset = LikeRelationship.objects.filter(tweet = self.tweet)
+
+  def test_success_post(self):
+    self.like_response = self.client.post(self.like_url)
+    self.assertEqual(self.like_response.status_code, 302)
+    self.assertEqual(self.like_queryset.count(), 1)
+
+
+class LikeFailureTest(TestCase):
+  def setUp(self):
+    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.person, text='text', pk = '1')
+    self.client.login(username='person', password='testpassword')
+    self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
+    self.like_queryset = LikeRelationship.objects.filter(user = self.person)
+
+  def test_failure_post_with_not_exist_tweet(self):
+    self.like_not_exist_pk = 100
+    self.like_not_exist_url = reverse('like', kwargs = {'pk': self.like_not_exist_pk})
+    self.like_not_exist_response = self.client.post(self.like_not_exist_url)
+    self.assertEqual(self.like_not_exist_response.status_code, 404)
+    self.assertEqual(self.like_queryset.count(), 0)
+
+  def test_failure_post_with_favorited_tweet(self):
+    self.client.post(self.like_url)
+    self.like_again_response = self.client.post(self.like_url)
+    self.assertEqual(self.like_again_response.status_code, 400)
+    self.assertEqual(self.like_queryset.count(), 1)
+
+
+class UnLikeSuccessTest(TestCase):
+  def setUp(self):
+    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.person, text='text')
+    self.client.login(username='person', password='testpassword')
+    self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
+    self.unlike_url = reverse('unlike', kwargs = {'pk': self.tweet.pk})
+    self.like_queryset = LikeRelationship.objects.filter(tweet = self.tweet)
+    self.client.post(self.like_url)
+
+  def test_success_post(self):
+    self.assertEqual(self.like_queryset.count(), 1)
+    self.unlike_response = self.client.post(self.unlike_url)
+    self.assertEqual(self.unlike_response.status_code, 302)
+    self.assertEqual(self.like_queryset.count(), 0)
+
+
+class UnLikeFailureTest(TestCase):
+  def setUp(self):
+    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.person, text='text', pk = '1')
+    self.client.login(username='person', password='testpassword')
+    self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
+    self.unlike_url = reverse('unlike', kwargs = {'pk': self.tweet.pk})
+    self.like_queryset = LikeRelationship.objects.filter(user = self.person)
+    self.client.post(self.like_url)
+
+  def test_failure_post_with_not_exist_tweet(self):
+    self.assertEqual(self.like_queryset.count(), 1)
+    self.unlike_not_exist_pk = 100
+    self.unlike_not_exist_url = reverse('unlike', kwargs = {'pk': self.unlike_not_exist_pk})
+    self.unlike_not_exist_response = self.client.post(self.unlike_not_exist_url)
+    self.assertEqual(self.unlike_not_exist_response.status_code, 404)
+    self.assertEqual(self.like_queryset.count(), 1)
+
+  def test_failure_post_with_unfavorited_tweet(self):
+    self.assertEqual(self.like_queryset.count(), 1)
+    self.client.post(self.unlike_url)
+    self.assertEqual(self.like_queryset.count(), 0)
+    self.unlike_again_response = self.client.post(self.unlike_url)
+    self.assertEqual(self.unlike_again_response.status_code, 400)
+    self.assertEqual(self.like_queryset.count(), 0)
+
+
+class TweetDetailTest(TestCase):
+  def setUp(self):
+    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.person, text='text')
+    self.client.login(username='person', password='testpassword')
+    self.detail_url = reverse('detail', kwargs = {'pk': self.tweet.pk})
+    self.like_queryset = LikeRelationship.objects.filter(tweet = self.tweet)
+
+  def test_success_get(self):
+    self.detail_response = self.client.get(self.detail_url)
+    self.assertEqual(self.detail_response.status_code, 200)
+    self.assertEqual(self.like_queryset.count(), self.detail_response.context['like_number'])

@@ -169,7 +169,11 @@ class LikeView(LoginRequiredMixin, View):
   def post(self, request, *args, **kwargs):
     like_tweet = get_object_or_404(Tweet, pk = self.kwargs['pk'])
     user = request.user
-    LikeRelationship.objects.create(tweet = like_tweet, user = user)
+
+    if LikeRelationship.objects.filter(tweet = like_tweet, user = user).exists():
+      raise BadRequest
+    else:
+      LikeRelationship.objects.create(tweet = like_tweet, user = user)
     return redirect('detail', pk = like_tweet.pk)
 
 
@@ -177,6 +181,10 @@ class UnLikeView(LoginRequiredMixin, View):
   def post(self, request, *args, **kwargs):
     unlike_tweet = get_object_or_404(Tweet, pk = self.kwargs['pk'])
     user = request.user
-    LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).delete()
+    
+    if LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).exists():
+      LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).delete()
+    else:
+      raise BadRequest
     return redirect('detail', pk = unlike_tweet.pk)
 
