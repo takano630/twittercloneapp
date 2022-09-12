@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}profile{% endblock %}
-{% block css %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/home_style.css' %}" type="text/css"/>
 {% endblock %}
   
   
@@ -35,5 +36,30 @@
         <a href="{% url 'update' user.pk %}">プロフィール編集</a>
     </h2>
     <p>{{ user.username }}でログイン中</p>
+    <h3>このユーザーのツイート</h3>
+    {% for tweet in tweet_list %}
+      <div class="tweet">
+        <p>username: {{ tweet.user }}</p>
+        <p>published: {{ tweet.published_at }}</p>
+        <div id="text">
+          <h3>{{ tweet.text }}</h3>
+        </div>
+        <p id="delete">
+          <a href="{% url 'delete' tweet.pk %}">削除</a>
+        </p>
+        <p><a href ="{% url 'detail' tweet.pk %}">詳細</a></p>
+        {% if tweet.pk in like_list %}
+        <form action="{% url 'unlike' tweet.pk %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="unlike" value="unlike">
+        </form>
+        {% else %}
+        <form action="{% url 'like' tweet.pk %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="like" value="like">
+        </form>
+        {% endif %}
+      </div>
+    {% endfor %}
 {% endblock %}
 

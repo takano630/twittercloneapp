@@ -6,7 +6,7 @@ from django.contrib.auth import login, authenticate
 from django.core.exceptions import BadRequest
 
 from .forms import AccountCreateForm, ProfileForm, TweetCreateForm
-from .models import Tweet, Account, FollowRelationship
+from .models import Tweet, Account, FollowRelationship, LikeRelationship
 
 class TopView(TemplateView):
   template_name = 'top.html'
@@ -30,6 +30,12 @@ class HomeView(LoginRequiredMixin, ListView):
   queryset = Tweet.objects.order_by('published_at').reverse()
   context_object_name = "tweet_list"
   template_name = 'user/home.html'
+  
+  def get_context_data(self, *args, **kwargs):
+    context = super().get_context_data(*args, **kwargs)
+    user = self.request.user
+    context['like_list'] = LikeRelationship.objects.filter(user = user).values_list("tweet", flat = True)
+    return context
 
 
 class TweetView(LoginRequiredMixin, CreateView):
@@ -44,6 +50,18 @@ class TweetView(LoginRequiredMixin, CreateView):
     return redirect('home')
 
 
+class DetailTweetView(LoginRequiredMixin, TemplateView):
+  template_name = "user/tweet_detail.html"
+
+  def get_context_data(self, *args, **kwargs):
+    context = super().get_context_data(*args, **kwargs)
+    user = self.request.user
+    tweet_detail = get_object_or_404(Tweet, pk = self.kwargs['pk'])
+    context['tweet'] = tweet_detail
+    context['like_number'] = LikeRelationship.objects.filter(tweet = tweet_detail).count()
+    return context
+
+
 class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
   model = Tweet
   success_url = reverse_lazy('home')
@@ -56,9 +74,10 @@ class DeleteTweetView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
     return redirect('home')
 
 
-class ProfileView(TemplateView):
+class ProfileView(ListView):
   model = Account
   template_name = 'user/profile.html'
+  context_object_name = "tweet_list"
 
   def get_context_data(self, *args, **kwargs):
     context = super().get_context_data(*args, **kwargs)
@@ -71,6 +90,10 @@ class ProfileView(TemplateView):
     context['followee_number'] = user_profile.followed.all().count()
     context['is_follow'] = FollowRelationship.objects.filter(follower = self.request.user, followee = user_profile).exists()
     return context
+
+  def get_queryset(self, *args, **kwargs):
+    user = get_object_or_404(Account, username = self.kwargs['name'])
+    return Tweet.objects.filter(user = user).order_by('published_at').reverse()
 
 
 class AccountUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
@@ -140,4 +163,20 @@ class FollowerListView(LoginRequiredMixin, ListView):
   def get_queryset(self, *args, **kwargs):
     user = get_object_or_404(Account, username = self.kwargs['name'])
     return user.followed.prefetch_related("follower").all()
+
+
+class LikeView(LoginRequiredMixin, View):
+  def post(self, request, *args, **kwargs):
+    like_tweet = get_object_or_404(Tweet, pk = self.kwargs['pk'])
+    user = request.user
+    LikeRelationship.objects.create(tweet = like_tweet, user = user)
+    return redirect('detail', pk = like_tweet.pk)
+
+
+class UnLikeView(LoginRequiredMixin, View):
+  def post(self, request, *args, **kwargs):
+    unlike_tweet = get_object_or_404(Tweet, pk = self.kwargs['pk'])
+    user = request.user
+    LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).delete()
+    return redirect('detail', pk = unlike_tweet.pk)
 

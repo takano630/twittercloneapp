@@ -29,7 +29,18 @@
         <p id="delete">
           <a href="{% url 'delete' tweet.pk %}">削除</a>
         </p>
-      
+        <p><a href ="{% url 'detail' tweet.pk %}">詳細</a></p>
+        {% if tweet.pk in like_list %}
+        <form action="{% url 'unlike' tweet.pk %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="unlike" value="unlike">
+        </form>
+        {% else %}
+        <form action="{% url 'like' tweet.pk %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="like" value="like">
+        </form>
+        {% endif %}
       </div>
     {% endfor %}
 {% endblock %}
