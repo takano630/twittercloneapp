@@ -531,8 +531,8 @@ class FollowerListTest(TestCase):
 
 class LikeSuccessTest(TestCase):
   def setUp(self):
-    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
-    self.tweet = Tweet.objects.create(user=self.person, text='text')
+    self.user = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.user, text='text')
     self.client.login(username='person', password='testpassword')
     self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
     self.like_queryset = LikeRelationship.objects.filter(tweet = self.tweet)
@@ -545,11 +545,11 @@ class LikeSuccessTest(TestCase):
 
 class LikeFailureTest(TestCase):
   def setUp(self):
-    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
-    self.tweet = Tweet.objects.create(user=self.person, text='text', pk = '1')
+    self.user = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.user, text='text', pk = '1')
     self.client.login(username='person', password='testpassword')
     self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
-    self.like_queryset = LikeRelationship.objects.filter(user = self.person)
+    self.like_queryset = LikeRelationship.objects.filter(user = self.user)
 
   def test_failure_post_with_not_exist_tweet(self):
     self.like_not_exist_pk = 100
@@ -567,8 +567,8 @@ class LikeFailureTest(TestCase):
 
 class UnLikeSuccessTest(TestCase):
   def setUp(self):
-    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
-    self.tweet = Tweet.objects.create(user=self.person, text='text')
+    self.user = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.user, text='text')
     self.client.login(username='person', password='testpassword')
     self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
     self.unlike_url = reverse('unlike', kwargs = {'pk': self.tweet.pk})
@@ -584,12 +584,12 @@ class UnLikeSuccessTest(TestCase):
 
 class UnLikeFailureTest(TestCase):
   def setUp(self):
-    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
-    self.tweet = Tweet.objects.create(user=self.person, text='text', pk = '1')
+    self.user = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.user, text='text', pk = '1')
     self.client.login(username='person', password='testpassword')
     self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
     self.unlike_url = reverse('unlike', kwargs = {'pk': self.tweet.pk})
-    self.like_queryset = LikeRelationship.objects.filter(user = self.person)
+    self.like_queryset = LikeRelationship.objects.filter(user = self.user)
     self.client.post(self.like_url)
 
   def test_failure_post_with_not_exist_tweet(self):
@@ -611,8 +611,8 @@ class UnLikeFailureTest(TestCase):
 
 class TweetDetailTest(TestCase):
   def setUp(self):
-    self.person = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
-    self.tweet = Tweet.objects.create(user=self.person, text='text')
+    self.user = Account.objects.create_user(username='person', email='test@test.test', password='testpassword', age='1')
+    self.tweet = Tweet.objects.create(user=self.user, text='text')
     self.client.login(username='person', password='testpassword')
     self.detail_url = reverse('detail', kwargs = {'pk': self.tweet.pk})
     self.like_queryset = LikeRelationship.objects.filter(tweet = self.tweet)
