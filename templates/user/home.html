@@ -31,16 +31,62 @@
         </p>
         <p><a href ="{% url 'detail' tweet.pk %}">詳細</a></p>
         {% if tweet.pk in like_list %}
-        <form action="{% url 'unlike' tweet.pk %}" method="post">
-            {% csrf_token %}
-            <input type="submit" name="unlike" value="unlike">
-        </form>
+        <button id= "like{{ tweet.pk }}" type="submit" class="like_button {{ tweet.pk }}">いいね解除</button>
         {% else %}
-        <form action="{% url 'like' tweet.pk %}" method="post">
-            {% csrf_token %}
-            <input type="submit" name="like" value="like">
-        </form>
+        <button id= "like{{ tweet.pk }}" type="submit" class="like_button {{ tweet.pk }}">いいね</button>
         {% endif %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script>
+          function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+              var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                }
+              }
+            }
+            return cookieValue;
+          }
+  
+          var csrftoken = getCookie('csrftoken');
+          
+          function csrfSafeMethod(method) {
+           // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+          }
+    
+          $.ajaxSetup({
+              beforeSend: function (xhr, settings) {
+                  if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                  }
+              }
+          });
+
+          $(document).on('click', "#like{{ tweet.pk }}", function(event){
+            event.preventDefault();
+            $.ajax({
+              type: 'POST',
+              url: "{% url 'like' tweet.pk %}",
+              data: {
+              },
+              dataType: 'json',
+            })
+            .done(function(response){
+              let like_text = document.getElementsByClassName("like_button {{ tweet.pk }}")[0];
+              if (response.liked) {
+                like_text.textContent = "いいね解除";
+              } else {
+                like_text.textContent = "いいね";
+              }
+            });
+          });
+        </script>
       </div>
     {% endfor %}
 {% endblock %}

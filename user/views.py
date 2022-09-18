@@ -4,6 +4,8 @@ from django.views.generic import TemplateView, ListView, DeleteView, CreateView,
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, authenticate
 from django.core.exceptions import BadRequest
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 from .forms import AccountCreateForm, ProfileForm, TweetCreateForm
 from .models import Tweet, Account, FollowRelationship, LikeRelationship
@@ -164,27 +166,20 @@ class FollowerListView(LoginRequiredMixin, ListView):
     user = get_object_or_404(Account, username = self.kwargs['name'])
     return user.followed.prefetch_related("follower").all()
 
+@login_required
+def like_view(request, pk):
+  like_tweet = get_object_or_404(Tweet, pk = pk)
+  user = request.user
 
-class LikeView(LoginRequiredMixin, View):
-  def post(self, request, *args, **kwargs):
-    like_tweet = get_object_or_404(Tweet, pk = self.kwargs['pk'])
-    user = request.user
-
-    if LikeRelationship.objects.filter(tweet = like_tweet, user = user).exists():
-      raise BadRequest
-    else:
-      LikeRelationship.objects.create(tweet = like_tweet, user = user)
-    return redirect('detail', pk = like_tweet.pk)
-
-
-class UnLikeView(LoginRequiredMixin, View):
-  def post(self, request, *args, **kwargs):
-    unlike_tweet = get_object_or_404(Tweet, pk = self.kwargs['pk'])
-    user = request.user
-    
-    if LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).exists():
-      LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).delete()
-    else:
-      raise BadRequest
-    return redirect('detail', pk = unlike_tweet.pk)
+  if LikeRelationship.objects.filter(tweet = like_tweet, user = user).exists():
+    LikeRelationship.objects.filter(tweet = like_tweet, user = user).delete()
+    liked = False
+  else:
+    LikeRelationship.objects.create(tweet = like_tweet, user = user)
+    liked = True
+  
+  context = {
+    'liked': liked,
+  }
+  return JsonResponse(context)
 

@@ -14,8 +14,7 @@ urlpatterns = [
     path('update/<int:pk>', views.AccountUpdateView.as_view(), name='update'),
     path('follow/<slug:name>', views.FollowView.as_view(), name='follow'),
     path('unfollow/<slug:name>', views.UnFollowView.as_view(), name='unfollow'),
-    path('like/<int:pk>', views.LikeView.as_view(), name='like'),
-    path('unlike/<int:pk>', views.UnLikeView.as_view(), name='unlike'),
+    path('like/<int:pk>', views.like_view, name='like'),
     path('followlist/<slug:name>', views.FollowListView.as_view(), name='followlist'),
     path('followerlist/<slug:name>', views.FollowerListView.as_view(), name='followerlist'),
 ]
