@@ -172,8 +172,8 @@ def like_view(request, pk):
   user = request.user
 
   if LikeRelationship.objects.filter(tweet = like_tweet, user = user).exists():
-    LikeRelationship.objects.filter(tweet = like_tweet, user = user).delete()
     liked = False
+    raise BadRequest
   else:
     LikeRelationship.objects.create(tweet = like_tweet, user = user)
     liked = True
@@ -183,3 +183,19 @@ def like_view(request, pk):
   }
   return JsonResponse(context)
 
+@login_required
+def unlike_view(request, pk):
+  unlike_tweet = get_object_or_404(Tweet, pk = pk)
+  user = request.user
+
+  if LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).exists():
+    LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).delete()
+    liked = False
+  else:
+    liked = True
+    raise BadRequest
+  
+  context = {
+    'liked': liked,
+  }
+  return JsonResponse(context)
