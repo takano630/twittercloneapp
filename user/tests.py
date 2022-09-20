@@ -561,8 +561,8 @@ class LikeFailureTest(TestCase):
   def test_failure_post_with_favorited_tweet(self):
     self.client.post(self.like_url)
     self.like_again_response = self.client.post(self.like_url)
-    self.assertEqual(self.like_again_response.status_code, 200)
-    self.assertEqual(self.like_queryset.count(), 0)
+    self.assertEqual(self.like_again_response.status_code, 400)
+    self.assertEqual(self.like_queryset.count(), 1)
 
 
 class UnLikeSuccessTest(TestCase):
@@ -571,12 +571,13 @@ class UnLikeSuccessTest(TestCase):
     self.tweet = Tweet.objects.create(user=self.user, text='text')
     self.client.login(username='person', password='testpassword')
     self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
+    self.unlike_url = reverse('unlike', kwargs = {'pk': self.tweet.pk})
     self.like_queryset = LikeRelationship.objects.filter(tweet = self.tweet)
     self.client.post(self.like_url)
 
   def test_success_post(self):
     self.assertEqual(self.like_queryset.count(), 1)
-    self.unlike_response = self.client.post(self.like_url)
+    self.unlike_response = self.client.post(self.unlike_url)
     self.assertEqual(self.unlike_response.status_code, 200)
     self.assertEqual(self.like_queryset.count(), 0)
 
@@ -587,24 +588,25 @@ class UnLikeFailureTest(TestCase):
     self.tweet = Tweet.objects.create(user=self.user, text='text', pk = '1')
     self.client.login(username='person', password='testpassword')
     self.like_url = reverse('like', kwargs = {'pk': self.tweet.pk})
+    self.unlike_url = reverse('unlike', kwargs = {'pk': self.tweet.pk})
     self.like_queryset = LikeRelationship.objects.filter(user = self.user)
     self.client.post(self.like_url)
 
   def test_failure_post_with_not_exist_tweet(self):
     self.assertEqual(self.like_queryset.count(), 1)
     self.unlike_not_exist_pk = 100
-    self.unlike_not_exist_url = reverse('like', kwargs = {'pk': self.unlike_not_exist_pk})
+    self.unlike_not_exist_url = reverse('unlike', kwargs = {'pk': self.unlike_not_exist_pk})
     self.unlike_not_exist_response = self.client.post(self.unlike_not_exist_url)
     self.assertEqual(self.unlike_not_exist_response.status_code, 404)
     self.assertEqual(self.like_queryset.count(), 1)
 
   def test_failure_post_with_unfavorited_tweet(self):
     self.assertEqual(self.like_queryset.count(), 1)
-    self.client.post(self.like_url)
+    self.client.post(self.unlike_url)
     self.assertEqual(self.like_queryset.count(), 0)
-    self.unlike_again_response = self.client.post(self.like_url)
-    self.assertEqual(self.unlike_again_response.status_code, 200)
-    self.assertEqual(self.like_queryset.count(), 1)
+    self.unlike_again_response = self.client.post(self.unlike_url)
+    self.assertEqual(self.unlike_again_response.status_code, 400)
+    self.assertEqual(self.like_queryset.count(), 0)
 
 
 class TweetDetailTest(TestCase):

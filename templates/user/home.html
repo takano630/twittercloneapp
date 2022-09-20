@@ -30,11 +30,13 @@
           <a href="{% url 'delete' tweet.pk %}">削除</a>
         </p>
         <p><a href ="{% url 'detail' tweet.pk %}">詳細</a></p>
-        {% if tweet.pk in like_list %}
-        <button id= "like{{ tweet.pk }}" type="submit" data_liked= "True" class="like_button {{ tweet.pk }}">いいね解除</button>
-        {% else %}
-        <button id= "like{{ tweet.pk }}" type="submit" data_liked= "False" class="like_button {{ tweet.pk }}">いいね</button>
-        {% endif %}
+        <div id="like_button {{ tweet.pk }}">
+          {% if tweet.pk in like_list %}
+          <button id= "like{{ tweet.pk }}" type="submit" data_liked= "True">いいね解除</button>
+          {% else %}
+          <button id= "like{{ tweet.pk }}" type="submit" data_liked= "False">いいね</button>
+          {% endif %}
+        </div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script>
@@ -87,11 +89,11 @@
               dataType: 'json',
             })
             .done(function(response){
-              let like_text = document.getElementsByClassName("like_button {{ tweet.pk }}")[0];
+              let like_text = document.getElementById("like_button {{ tweet.pk }}");
               if (response.liked) {
                 like_text.innerHTML = '<button id= "like{{ tweet.pk }}" type="submit" data_liked= "True" class="like_button {{ tweet.pk }}">いいね解除</button>';
               } else {
-                like_text.innerHTML = '<button id= "like{{ tweet.pk }}" type="submit" data_liked= "False" class="like_button {{ tweet.pk }}">いいね</button>'
+                like_text.innerHTML = '<button id= "like{{ tweet.pk }}" type="submit" data_liked= "False" class="like_button {{ tweet.pk }}">いいね</button>';
               }
             });
           });
