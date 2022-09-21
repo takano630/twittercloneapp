@@ -108,7 +108,7 @@
             })
             .done(function(response){
               let like_text = document.getElementById("like_button {{ tweet.pk }}");
-              if (response.liked) {
+              if (response.is_liked) {
                 like_text.innerHTML = '<button id= "like{{ tweet.pk }}" type="submit" data_liked= "True" class="like_button {{ tweet.pk }}">いいね解除</button>';
               } else {
                 like_text.innerHTML = '<button id= "like{{ tweet.pk }}" type="submit" data_liked= "False" class="like_button {{ tweet.pk }}">いいね</button>';

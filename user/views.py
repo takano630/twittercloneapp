@@ -172,14 +172,13 @@ def like_view(request, pk):
   user = request.user
 
   if LikeRelationship.objects.filter(tweet = like_tweet, user = user).exists():
-    liked = False
     raise BadRequest
   else:
     LikeRelationship.objects.create(tweet = like_tweet, user = user)
-    liked = True
+    is_liked = True
   
   context = {
-    'liked': liked,
+    'is_liked': is_liked,
   }
   return JsonResponse(context)
 
@@ -190,12 +189,11 @@ def unlike_view(request, pk):
 
   if LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).exists():
     LikeRelationship.objects.filter(tweet = unlike_tweet, user = user).delete()
-    liked = False
+    is_liked = False
   else:
-    liked = True
     raise BadRequest
   
   context = {
-    'liked': liked,
+    'is_liked': is_liked,
   }
   return JsonResponse(context)
