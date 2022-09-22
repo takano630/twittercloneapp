@@ -29,7 +29,75 @@
         <p id="delete">
           <a href="{% url 'delete' tweet.pk %}">削除</a>
         </p>
-      
+        <p><a href ="{% url 'detail' tweet.pk %}">詳細</a></p>
+        <div id="like_button {{ tweet.pk }}">
+          {% if tweet.pk in like_list %}
+          <button id= "like{{ tweet.pk }}" type="submit" data_liked= "True">いいね解除</button>
+          {% else %}
+          <button id= "like{{ tweet.pk }}" type="submit" data_liked= "False">いいね</button>
+          {% endif %}
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script>
+          function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+              var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                }
+              }
+            }
+            return cookieValue;
+          }
+  
+          var csrftoken = getCookie('csrftoken');
+          
+          function csrfSafeMethod(method) {
+           // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+          }
+    
+          $.ajaxSetup({
+              beforeSend: function (xhr, settings) {
+                  if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                  }
+              }
+          });
+
+          $(document).on('click', "#like{{ tweet.pk }}", function(event){
+            event.preventDefault();
+            var data_liked;
+            var url_judge;
+            data_liked = $(this).attr("data_liked");
+            if (data_liked == "True") {
+              url_judge = "{% url 'unlike' tweet.pk %}";
+            } else {
+              url_judge = "{% url 'like' tweet.pk %}";
+            }
+            $.ajax({
+              type: 'POST',
+              url: url_judge,
+              data: {
+              },
+              dataType: 'json',
+            })
+            .done(function(response){
+              let like_text = document.getElementById("like_button {{ tweet.pk }}");
+              if (response.is_liked) {
+                like_text.innerHTML = '<button id= "like{{ tweet.pk }}" type="submit" data_liked= "True" class="like_button {{ tweet.pk }}">いいね解除</button>';
+              } else {
+                like_text.innerHTML = '<button id= "like{{ tweet.pk }}" type="submit" data_liked= "False" class="like_button {{ tweet.pk }}">いいね</button>';
+              }
+            });
+          });
+        </script>
       </div>
     {% endfor %}
 {% endblock %}

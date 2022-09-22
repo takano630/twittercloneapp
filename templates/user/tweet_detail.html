@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}tweet_detail{% endblock %}
+{% block css %}
+{% endblock %}
+  
+  
+{% block content %}
+    <h1>Twitter_clone_app!</h1>
+    <p>{{ user.username }}でログイン中</p>
+    <p>username: <a href="{% url 'profile' tweet.user.username %}">{{ tweet.user }}</a></p>
+    <p>published: {{ tweet.published_at }}</p>
+    <p>text: {{ tweet.text }}</p>
+    <p>like_number: {{ like_number }}</p>
+    <p><a href="{% url 'home' %}">ホームへ</a></p>
+{% endblock %}
